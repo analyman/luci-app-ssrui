@@ -1,0 +1,44 @@
+[
+    {
+        "gourp": "group_name", 
+        "server_list": [
+            {
+                "obfs" : "tls1.2_ticket_auth",
+                "server_port" : 543,
+                "obfsparam" : "itunes.apple.com",
+                "server" : "example.com",
+                "remarks" : "demo",
+                "password" : "password",
+                "method" : "none",
+                "group" : "group",
+                "protocol" : "auth_chain_a",
+                "protoparam" : "2680:fuck.net",
+                "local_address" : "0.0.0.0",
+                "local_port" : 7070,
+                "time_out" : 60,
+                "fast_open" : false
+            }
+        ]
+    },
+    {
+        "gourp": "group_name2", 
+        "server_list": [
+            {
+                "obfs" : "tls1.2_ticket_auth",
+                "server_port" : 543,
+                "obfsparam" : "itunes.apple.com",
+                "server" : "example.com",
+                "remarks" : "demo2",
+                "password" : "password",
+                "method" : "none",
+                "group" : "group",
+                "protocol" : "auth_chain_a",
+                "protoparam" : "2680:fuck.net",
+                "local_address" : "0.0.0.0",
+                "local_port" : 7070,
+                "time_out" : 60,
+                "fast_open" : false
+            }
+        ]
+    }
+]
