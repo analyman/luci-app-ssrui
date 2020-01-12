@@ -79,10 +79,11 @@ end
             <select id="user-server-list" class="flex-grow-1 border rounded-pill mx-3" name="what-server">
             </select>
 <script type="text/javascript">
-update_server_list_aux_empty();
 document.addEventListener("DOMContentLoaded", function() {
+    update_server_list([]);
     XHR.get('/cgi-bin/luci/admin/services/ssrui/request-json', {what: 'server_list'}, function(xhr, json_data) {
         update_server_list(json_data);
+        update_form_configure();
     });
 });
 document.getElementById("user-server-list").addEventListener("change", update_form_configure);
@@ -161,6 +162,19 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
         <button id="config-button-delete" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> Delete </button>
             </span>
         </div>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            config_reset_button.addEventListener("click", function() {
+                update_form_configure();
+            });
+            config_submit_button.addEventListener("click", function() {
+                update_server_list_from_form();
+            });
+            config_delete_button.addEventListener("click", function() {
+                delete_current_config();
+            });
+        });
+    </script>
     </div>
 </div>
 </div>
@@ -220,7 +234,7 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
     <div class="user-flex-item user-ia m-2 p-2 user-bg-server rounded">
         <div class="w-100 d-flex flex-column">
             <a href="#subscription-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Subscriptions:</a><br/>
-            <ul class="nobullet list-group">
+            <ul class="nobullet list-group" id="user-subscriptions-group">
                 <li><a href="#X" id="subscription_0" class="list-group-item active">What click</a></li>
                 <li><a href="#X" id="subscription_0" class="list-group-item">What click</a></li>
                 <li><a href="#X" id="subscription_0" class="list-group-item">What click</a></li>
@@ -245,7 +259,7 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
     <div class="user-flex-item user-ib m-2 p-2 user-bg-subscription rounded">
         <div class="w-100 d-flex flex-column">
             <a href="#server-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Servers:</a><br/>
-            <ul class="nobullet list-group">
+            <ul class="nobullet list-group" id="user-links-group">
                 <li><a href="#X" id="subscription_0" class="list-group-item active">What click</a></li>
                 <li><a href="#X" id="server_0" class="list-group-item">What click</a></li>
             </ul>

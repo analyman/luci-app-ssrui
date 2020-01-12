@@ -1,6 +1,9 @@
 #!/bin/bash
 
-declare -r LUCI_INS_DIR="/usr/lib/lua/luci"
+[ -z "${ROOT_DIR}" ] && ROOT_DIR="/"
+[[ "${ROOT_DIR}" =~ ^.*\/$ ]] || ROOT_DIR="$ROOT_DIR/"
+
+declare -r LUCI_INS_DIR="${ROOT_DIR}usr/lib/lua/luci"
 declare -r LIST_SAVE="$PWD/installed_files"
 
 declare -i PRINT_OUT=1
@@ -232,8 +235,8 @@ elif [ ${JUST_CLEAN} -eq 1 ]; then
     echo "cleanning"
 else
     install_dir_to_dir "$PWD/luci" "$LUCI_INS_DIR/"
-    install_dir_to_dir "$PWD/etc"  "/etc"
-    install_dir_to_dir "$PWD/www"  "/www"
+    install_dir_to_dir "$PWD/etc"  "${ROOT_DIR}etc"
+    install_dir_to_dir "$PWD/www"  "${ROOT_DIR}www"
 fi
 
 clean_exit 0

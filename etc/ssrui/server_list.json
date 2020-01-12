@@ -16,7 +16,8 @@
                 "local_address" : "0.0.0.0",
                 "local_port" : 7070,
                 "time_out" : 60,
-                "fast_open" : false
+                "fast_open" : false,
+                "subs_link": "http://subscription.link/file"
             }
         ]
     },
@@ -37,7 +38,8 @@
                 "local_address" : "0.0.0.0",
                 "local_port" : 7070,
                 "time_out" : 60,
-                "fast_open" : false
+                "fast_open" : false,
+                "subs_link": "http://subscription.link/file2"
             }
         ]
     }
