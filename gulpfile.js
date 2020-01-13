@@ -5,7 +5,7 @@ var tsify = require('tsify');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
 
-gulp.task('default', gulp.series(gulp.parallel('copy-html'), function () {
+gulp.task('default', function () {
         return browserify({
                     basedir: '.',
                     debug: true,
@@ -19,9 +19,9 @@ gulp.task('default', gulp.series(gulp.parallel('copy-html'), function () {
                     extensions: ['.ts']
                 })
         .bundle()
-        .pipe(source('bundle.js'))
+        .pipe(source('fucking.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('dist'));
-}));
+});

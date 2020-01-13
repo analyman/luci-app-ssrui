@@ -25,7 +25,6 @@ end
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 <script src="/luci-static/resources/ssrui/fucking.js"></script>
-<script src="/luci-static/resources/ssrui/fucking-x.js"></script>
 
 <style>
     /* fix a dropdown menu problem caused by including bootstrap */
@@ -164,17 +163,17 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
             </span>
         </div>
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-            config_reset_button.addEventListener("click", function() {
-                update_form_configure();
-            });
-            config_submit_button.addEventListener("click", function() {
-                update_server_list_from_form();
-            });
-            config_delete_button.addEventListener("click", function() {
-                delete_current_config();
-            });
+    document.addEventListener("DOMContentLoaded", function() {
+        ElementsAccessor.config_reset_button.addEventListener("click", function() {
+            update_form_configure();
         });
+        ElementsAccessor.config_submit_button.addEventListener("click", function() {
+            update_server_list_from_form();
+        });
+        ElementsAccessor.config_delete_button.addEventListener("click", function() {
+            delete_current_config();
+        });
+    });
     </script>
     </div>
 </div>
@@ -258,7 +257,8 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
         <div class="w-100 d-flex flex-column">
             <a href="#server-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Servers:</a><br/>
             <ul class="nobullet list-group" id="user-links-group">
-                <li><a href="#X" id="subscription_0" class="list-group-item active">What click</a></li>
+                <li><a href="#1" id="subscription_0" class="list-group-item active">What click</a></li>
+                <li><a href="#2" id="subscription_0" class="list-group-item">What click</a></li>
             </ul>
         </div>
     </div>

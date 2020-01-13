@@ -1,11 +1,13 @@
 {
     "version": "2.0.2",
     "compilerOptions": {
+        "allowJs": true,
         "lib": ["es5", "es2015.promise", "dom", "es2015"],
         "target": "es5",
         "typeRoots": [
             "node_modules/@types"
         ],
+        "rootDirs": ["./"],
         "outDir": "dist",
         "module": "es2015",
         "moduleResolution": "node",

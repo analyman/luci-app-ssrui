@@ -1,5 +1,9 @@
 /* SSRUI javascript */
 
+function export_to_global(names) {
+    names.map(x => eval("window." + x + " = window." + x + " || " + x));
+}
+
 function fucking_assert(what) //{
 {
     if (!what)
@@ -9,55 +13,51 @@ function fucking_assert(what) //{
 /** global variable list */
 // store servers, and exchange with server as json format
 var server_index = []
+exports.server_index = server_index;
+// Encapsulate elements into a object
+var ElementsAccessor = {};
+exports.ElementsAccessor = ElementsAccessor;
+function retry_get_elements() //{
+{
 // reference to server selector
-var server_list_elem = document.getElementById("user-server-list");
-document.addEventListener("DOMContentLoaded", function() {
-    if (server_list_elem == null)
-        server_list_elem = document.getElementById("user-server-list");
-    if (server_list_elem == null)
-        console.error("Bad news, debug this");
-});
+    if (ElementsAccessor.server_list_elem     == null) ElementsAccessor.server_list_elem     = document.getElementById("user-server-list");
+// list group
+    if (ElementsAccessor.subscriptions_group  == null) ElementsAccessor.subscriptions_group  = document.getElementById("user-subscriptions-group");
+    if (ElementsAccessor.links_group          == null) ElementsAccessor.links_group          = document.getElementById("user-links-group");
 // buttons reference
-var config_submit_button = document.getElementById("config-button-submit");
-var config_reset_button  = document.getElementById("config-button-reset");
-var config_delete_button = document.getElementById("config-button-delete");
-var subs_new_button      = document.getElementById("subs-button-new");
-var subs_update_button   = document.getElementById("subs-button-update");
-var subs_delete_button   = document.getElementById("subs-button-delete");
+    if (ElementsAccessor.config_submit_button == null) ElementsAccessor.config_submit_button = document.getElementById("config-button-submit");
+    if (ElementsAccessor.config_reset_button  == null) ElementsAccessor.config_reset_button  = document.getElementById("config-button-reset");
+    if (ElementsAccessor.config_delete_button == null) ElementsAccessor.config_delete_button = document.getElementById("config-button-delete");
+    if (ElementsAccessor.subs_new_button      == null) ElementsAccessor.subs_new_button      = document.getElementById("subs-button-new");
+    if (ElementsAccessor.subs_update_button   == null) ElementsAccessor.subs_update_button   = document.getElementById("subs-button-update");
+    if (ElementsAccessor.subs_delete_button   == null) ElementsAccessor.subs_delete_button   = document.getElementById("subs-button-delete");
+} //}
+function elements_test() //{
+{
+    if (ElementsAccessor.server_list_elem    == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subscriptions_group == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.links_group         == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_submit_button== null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_reset_button == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_delete_button== null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_new_button     == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_update_button  == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_delete_button  == null) console.error("Bad news, debug this");
+} //}
+exports.retry_get_elements = retry_get_elements;
+exports.elements_test = elements_test;
+
 document.addEventListener("DOMContentLoaded", function() {
-    if (config_submit_button == null) config_submit_button = document.getElementById("config-button-submit");
-    if (config_reset_button  == null) config_reset_button  = document.getElementById("config-button-reset");
-    if (config_delete_button == null) config_delete_button = document.getElementById("config-button-delete");
-    if (subs_new_button      == null) subs_new_button      = document.getElementById("subs-button-new");
-    if (subs_update_button   == null) subs_update_button   = document.getElementById("subs-button-update");
-    if (subs_delete_button   == null) subs_delete_button   = document.getElementById("subs-button-delete");
-    if (config_submit_button == null) console.error("Bad news, debug this");
-    if (config_reset_button  == null) console.error("Bad news, debug this");
-    if (config_delete_button == null) console.error("Bad news, debug this");
-    if (subs_new_button      == null) console.error("Bad news, debug this");
-    if (subs_update_button   == null) console.error("Bad news, debug this");
-    if (subs_delete_button   == null) console.error("Bad news, debug this");
+    retry_get_elements();
 });
 
-var subscriptions_group = document.getElementById("user-subscriptions-group");
-var links_group         = document.getElementById("user-links-group");
-document.addEventListener("DOMContentLoaded", function() {
-    if (subscriptions_group == null) subscriptions_group = document.getElementById("user-subscriptions-group");
-    if (links_group         == null) links_group         = document.getElementById("links_group");
-    if (subscriptions_group == null) console.error("Bad news, debug this");
-    if (links_group         == null) console.error("Bad news, debug this");
-    subscriptions_group.addEventListener("activeChange", function() {
-    });
-    links_group.addEventListener("contentChange", function() {
-    });
-});
 
 function update_form_configure() //{
 {
-    if (server_list_elem == null) {console.log("id #user-servr-list doesn't exist"); return;}
-    let index = server_list_elem.selectedIndex;
+    if (ElementsAccessor.server_list_elem == null) {console.log("id #user-servr-list doesn't exist"); return;}
+    let index = ElementsAccessor.server_list_elem.selectedIndex;
     if (index == -1) {return;}
-    let server_id = parseInt(server_list_elem.options[index].getAttribute("value"));
+    let server_id = parseInt(ElementsAccessor.server_list_elem.options[index].getAttribute("value"));
     if (isNaN(server_id)) {console.log("bad number NaN"); return;}
     let update_list = ["server", "server_port", "local_address", "local_port", "password", 
         "method", "obfs", "protocol", "obfsparam", "protoparam", "remarks"];
@@ -92,9 +92,9 @@ function update_form_configure() //{
 
 function update_server_list_from_form() //{
 {
-    if (server_list_elem == null) {console.log("id #user-servr-list doesn't exist"); return;}
-    let index = server_list_elem.selectedIndex;
-    let server_id = parseInt(server_list_elem.options[index].getAttribute("value"));
+    if (ElementsAccessor.server_list_elem == null) {console.log("id #user-servr-list doesn't exist"); return;}
+    let index = ElementsAccessor.server_list_elem.selectedIndex;
+    let server_id = parseInt(ElementsAccessor.server_list_elem.options[index].getAttribute("value"));
     if (isNaN(server_id)) {console.log("bad number NaN"); return;}
     let server = {};
     let update_list = ["server", "server_port", "local_address", "local_port", "password", 
@@ -124,24 +124,24 @@ function update_server_list_from_form() //{
 
 function update_server_list_when_add_new_server() //{
 {
-    let index = server_list_elem.selectedIndex;
+    let index = ElementsAccessor.server_list_elem.selectedIndex;
     let new_option = document.createElement("option");
     new_option.value = server_index.length;
     new_option.innerHTML = server_index[server_index.length - 1].remarks;
-    let a = server_list_elem.removeChild(server_list_elem.lastChild);
-    server_list_elem.appendChild(new_option);
-    server_list_elem.appendChild(a);
-    server_list_elem.selectedIndex = index;
-    server_list_elem.dispatchEvent(new Event("change"));
+    let a = ElementsAccessor.server_list_elem.removeChild(ElementsAccessor.server_list_elem.lastChild);
+    ElementsAccessor.server_list_elem.appendChild(new_option);
+    ElementsAccessor.server_list_elem.appendChild(a);
+    ElementsAccessor.server_list_elem.selectedIndex = index;
+    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
     return true;
 } //}
 
 function delete_current_config() //{
 {
-    let index = server_list_elem.selectedIndex;
-    fucking_assert(server_list_elem.children.length > 0);
-    if (index == server_list_elem.children.length - 1) {
-        config_reset_button.dispatchEvent(new Event("click"));
+    let index = ElementsAccessor.server_list_elem.selectedIndex;
+    fucking_assert(ElementsAccessor.server_list_elem.children.length > 0);
+    if (index == ElementsAccessor.server_list_elem.children.length - 1) {
+        ElementsAccessor.config_reset_button.dispatchEvent(new Event("click"));
         return;
     }
     let new_server_index = [];
@@ -152,10 +152,10 @@ function delete_current_config() //{
     let data = classify_servers_by_group(new_server_index);
     update_server_list(data);
     if (index > 0)
-        server_list_elem.selectedIndex = index - 1;
+        ElementsAccessor.server_list_elem.selectedIndex = index - 1;
     else
-        server_list_elem.selectedIndex = 0;
-    config_reset_button.dispatchEvent(new Event("click"));
+        ElementsAccessor.server_list_elem.selectedIndex = 0;
+    ElementsAccessor.config_reset_button.dispatchEvent(new Event("click"));
     return;
 } //}
 
@@ -167,11 +167,11 @@ function click_wrap(_id, _class) //{
 {
     return function() {
         let e_id = document.getElementById(_id)
-        if (e_id == null) return 1;
+        if (e_id == null) return false;
 
         let pattern = /^(\w*)-(\w*)-tab$/i;
         let _id_match = _id.match(pattern)
-        if (_id_match == null) return 1;
+        if (_id_match == null) return false;
 
         let _children = e_id.parentNode.children;
         for (let i = 0; i < _children.length; i++) {
@@ -185,9 +185,9 @@ function click_wrap(_id, _class) //{
         }
         e_id.classList.add(_class);
         let tab_panel = document.getElementById(_id_match[1] + "-" + _id_match[2] + "-" + "content");
-        if (tab_panel == null) return 1;
+        if (tab_panel == null) return false;
         tab_panel.style.display = "block";
-        return 0;
+        return true;
     }
 } //}
 
@@ -195,10 +195,10 @@ function tab_click(_id) //{
 {
     let tab_pattern = /^(\w*)-tab$/;
     let tab_match = _id.match(tab_pattern)
-    if (tab_match == null) return 1;
+    if (tab_match == null) return false;
     let child_pattern = /^(\w*)-(\w*)-tab$/;
     let elem = document.getElementById(_id);
-    if (elem == null) return 1;
+    if (elem == null) return false;
     for(let i = 0; i<elem.children.length; ++i) {
         let child = elem.children[i];
         let child_match = child.id.match(child_pattern);
@@ -206,29 +206,19 @@ function tab_click(_id) //{
         if (child_match[1] != tab_match[1]) continue;
         elem.children[i].addEventListener("click", click_wrap(elem.children[i].id, "active"));
     }
+    return true;
 } //}
 
-
-// DEPRECATED
-function fetch_what_json(what_json) //{
-{
-    if (XHR == null) return null;
-    let res = {}
-    XHR.get('/cgi-bin/luci/admin/services/ssrui/request-json', {what: what_json}, function(xhr, json_data) {
-        res = json_data;
-    });
-    if (res == {}) return null;
-    return res;
-} //}
 
 function update_method_protocol_obfs_list(item) //{
 {
-    if (XHR == null) return null;
+    if (XHR == null) return false;
+    let ret = false;
     XHR.get('/cgi-bin/luci/admin/services/ssrui/request-json', {what: item + "_list"}, function(xhr, json_data) {
         let elem = document.getElementById("main-server-" + item);
         if (elem == null) {
             console.warn("undefined id #main-server-" + item);
-            return null;
+            return false;
         }
         while (elem.firstChild) 
             elem.removeChild(elem.firstChild);
@@ -239,42 +229,44 @@ function update_method_protocol_obfs_list(item) //{
             new_option.innerHTML = json_data[i];
             elem.appendChild(new_option);
         }
-        return null;
+        ret = true;
+        return true;
     });
+    return ret;
 } //}
 
 
 function update_server_list_aux_empty() //{
 {
-    if (server_list_elem == null || server_list_elem.firstChild) return;
+    if (ElementsAccessor.server_list_elem == null || ElementsAccessor.server_list_elem.firstChild) return;
     let template = document.createElement("option");
     template.value = 0;
     template.innerHTML = "NEW";
-    server_list_elem.appendChild(template);
+    ElementsAccessor.server_list_elem.appendChild(template);
     return;
 } //}
 
 function update_server_list_select(servers) //{
 {
-    while (server_list_elem.firstChild)
-        server_list_elem.removeChild(server_list_elem.firstChild);
+    while (ElementsAccessor.server_list_elem.firstChild)
+        ElementsAccessor.server_list_elem.removeChild(ElementsAccessor.server_list_elem.firstChild);
 
     let template = document.createElement("option");
     for(let i = 1; i<=servers.length; ++i) {
         let new_option = template.cloneNode(false);
         new_option.value = i;
         new_option.innerHTML = servers[i-1].remarks;
-        server_list_elem.appendChild(new_option);
+        ElementsAccessor.server_list_elem.appendChild(new_option);
     }
     template.value = 0;
     template.innerHTML = "NEW";
-    server_list_elem.appendChild(template);
+    ElementsAccessor.server_list_elem.appendChild(template);
     return;
 } //}
 
 function update_server_list(json_data) //{
 {
-    if (server_list_elem == null) return false;
+    if (ElementsAccessor.server_list_elem == null) return false;
 
     if (json_data == null) return false;
     let server_list = [];
@@ -332,3 +324,7 @@ function servers_json_to_list(server_json) //{
     }
     return ret_list;
 } //}
+
+export_to_global(["tab_click", "update_form_configure", "update_server_list", 
+                  "update_server_list_select", "update_server_list_from_form", 
+                  "delete_current_config", "ElementsAccessor", "server_index"]);
