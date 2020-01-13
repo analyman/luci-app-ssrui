@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     links_group.addEventListener("contentChange", function() {
     });
-}
+});
 
 function update_form_configure() //{
 {

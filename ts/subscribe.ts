@@ -7,10 +7,10 @@ function safe_base64_decoder(str: string): string //{
     return window.atob(str);
 } //}
 
-var default_local_address = "0.0.0.0";
-var default_local_port    = "1080";
+export var default_local_address = "0.0.0.0";
+export var default_local_port    = "1080";
 // class SSRServer //{
-class SSRServer
+export class SSRServer
 {
     remarks:       string;
     server:        string;
@@ -72,7 +72,7 @@ class SSRServer
 }; //}
 
 // class SSRSubscription //{
-class SSRSubscription
+export class SSRSubscription
 {
     URL:       string;
     groupName: string;

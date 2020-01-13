@@ -237,6 +237,8 @@ else
     install_dir_to_dir "$PWD/luci" "$LUCI_INS_DIR/"
     install_dir_to_dir "$PWD/etc"  "${ROOT_DIR}etc"
     install_dir_to_dir "$PWD/www"  "${ROOT_DIR}www"
+    [ -x "$(which tsc)" ] && tsc
+    [ -d $PWD/dist ]      && install_dir_to_dir "$PWD/dist" "${ROOT_DIR}www/luci-static/resources/ssrui"
 fi
 
 clean_exit 0

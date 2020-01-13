@@ -1,0 +1,19 @@
+{
+  "name": "luci-app-ssrui",
+  "version": "1.0.0",
+  "description": "\"LuCI UI of Shadowsocksr\"",
+  "main": "./ts/fucking.ts",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://analyman.com/prack/luci-app-ssrui.git"
+  },
+  "keywords": [
+    "luci",
+    "shadowsocksr"
+  ],
+  "author": "prack",
+  "license": "MIT"
+}
