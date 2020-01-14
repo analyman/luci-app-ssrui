@@ -45,7 +45,7 @@ export class SSRServer
         this.extra_info = {};
         for(let i in data) {
             if(this[i] != null)
-                break;
+                continue;
             this.extra_info[i] = data[i];
         }
     } //}

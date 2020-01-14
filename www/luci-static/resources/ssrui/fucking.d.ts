@@ -1,6 +1,7 @@
-export var server_index:     any[];
 // reference to server selector
 export var ElementsAccessor: Record<string, Element>;
+// reference to variables
+export var VarAccessor:      Record<string, any>;
 
 export function retry_get_elements(): void;
 export function update_form_configure(): boolean;

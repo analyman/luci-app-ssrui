@@ -79,14 +79,13 @@ end
             <select id="user-server-list" class="flex-grow-1 border rounded-pill mx-3" name="what-server">
             </select>
 <script type="text/javascript">
+document.getElementById("user-server-list").addEventListener("change", update_form_configure);
 document.addEventListener("DOMContentLoaded", function() {
     update_server_list([]);
     XHR.get('/cgi-bin/luci/admin/services/ssrui/request-json', {what: 'server_list'}, function(xhr, json_data) {
         update_server_list(json_data);
-        update_form_configure();
     });
 });
-document.getElementById("user-server-list").addEventListener("change", update_form_configure);
 </script>
         </div>
         <div class="user-ping-btn mx-2 mt-5">
@@ -234,9 +233,7 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
     <div class="user-flex-item user-ia m-2 p-2 user-bg-server rounded">
         <div class="w-100 d-flex flex-column">
             <a href="#subscription-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Subscriptions:</a><br/>
-            <ul class="nobullet list-group" id="user-subscriptions-group">
-                <li><a class="list-group-item active">What click</a></li>
-            </ul>
+            <ul class="nobullet list-group" id="user-subscriptions-group"></ul>
         </div>
     </div>
     <div class="user-flex-item user-ic m-2 p-2 flex-row">
@@ -256,10 +253,7 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
     <div class="user-flex-item user-ib m-2 p-2 user-bg-subscription rounded">
         <div class="w-100 d-flex flex-column">
             <a href="#server-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Servers:</a><br/>
-            <ul class="nobullet list-group" id="user-links-group">
-                <li><a href="#1" id="subscription_0" class="list-group-item active">What click</a></li>
-                <li><a href="#2" id="subscription_0" class="list-group-item">What click</a></li>
-            </ul>
+            <ul class="nobullet list-group" id="user-links-group"></ul>
         </div>
     </div>
 </div>

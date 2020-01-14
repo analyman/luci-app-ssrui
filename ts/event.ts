@@ -5,3 +5,6 @@ export var UActiveChange  = "UActiveChange";
 
 /* when this event occurs, the element should update its contents */
 export var UContentChange = "UContentChange";
+
+/* server list change */
+export var UServerListChange = "serverListChange";

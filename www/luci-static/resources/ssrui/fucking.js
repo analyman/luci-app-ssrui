@@ -12,8 +12,10 @@ function fucking_assert(what) //{
 
 /** global variable list */
 // store servers, and exchange with server as json format
-var server_index = []
-exports.server_index = server_index;
+// when the content of this array changed, fire event "serverChange" in document object
+var VarAccessor = {};
+VarAccessor.server_index = [];
+exports.VarAccessor = VarAccessor;
 // Encapsulate elements into a object
 var ElementsAccessor = {};
 exports.ElementsAccessor = ElementsAccessor;
@@ -51,6 +53,17 @@ document.addEventListener("DOMContentLoaded", function() {
     retry_get_elements();
 });
 
+document.addEventListener("serverListChange", function(earg) {
+    switch (earg.detail) {
+        case "new":    update_server_list_when_add_new_server(); break;
+        case "delete":
+        case "update": update_server_list_select(VarAccessor.server_index); break;
+        default: console.error("unexpected event detail."); return;
+    };
+    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
+    return;
+});
+
 
 function update_form_configure() //{
 {
@@ -65,7 +78,7 @@ function update_form_configure() //{
     if (server_id == 0) {
         for (let s in update_list)
             server[update_list[s]] = ""
-    } else server = server_index[server_id - 1];
+    } else server = VarAccessor.server_index[server_id - 1];
     if (server == null) {console.log("unexcepted null value"); return;}
     for (let s in update_list) {
         let to_update = document.getElementById("main-server-" + update_list[s].replace(/[_]/g, "-"));
@@ -102,7 +115,7 @@ function update_server_list_from_form() //{
     if (server_id == 0) {
         for (let s in update_list)
             server[update_list[s]] = ""
-    } else server = server_index[server_id - 1];
+    } else server = VarAccessor.server_index[server_id - 1];
     if (server == null) {console.log("unexcepted null value"); return;}
     for (let s in update_list) {
         let update_with = document.getElementById("main-server-" + update_list[s].replace(/[_]/g, "-"));
@@ -116,8 +129,8 @@ function update_server_list_from_form() //{
     if (server_id == 0) {
         server["group"] = "USER-DEFINED";
         server["subs_link"] = "USER";
-        server_index.push(server);
-        update_server_list_when_add_new_server();
+        VarAccessor.server_index.push(server);
+        document.dispatchEvent(new CustomEvent("serverListChange", {detail: "new"}));
     }
     return true;
 } //}
@@ -126,13 +139,13 @@ function update_server_list_when_add_new_server() //{
 {
     let index = ElementsAccessor.server_list_elem.selectedIndex;
     let new_option = document.createElement("option");
-    new_option.value = server_index.length;
-    new_option.innerHTML = server_index[server_index.length - 1].remarks;
+    new_option.value = VarAccessor.server_index.length;
+    new_option.innerHTML = VarAccessor.server_index[VarAccessor.server_index.length - 1].remarks;
     let a = ElementsAccessor.server_list_elem.removeChild(ElementsAccessor.server_list_elem.lastChild);
     ElementsAccessor.server_list_elem.appendChild(new_option);
     ElementsAccessor.server_list_elem.appendChild(a);
     ElementsAccessor.server_list_elem.selectedIndex = index;
-    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
+//    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
     return true;
 } //}
 
@@ -146,16 +159,15 @@ function delete_current_config() //{
     }
     let new_server_index = [];
     for (let i = 0; i<index; ++i)
-        new_server_index.push(server_index[i]);
-    for (let i = index + 1; i<server_index.length; ++i)
-        new_server_index.push(server_index[i]);
+        new_server_index.push(VarAccessor.server_index[i]);
+    for (let i = index + 1; i<VarAccessor.server_index.length; ++i)
+        new_server_index.push(VarAccessor.server_index[i]);
     let data = classify_servers_by_group(new_server_index);
     update_server_list(data);
     if (index > 0)
         ElementsAccessor.server_list_elem.selectedIndex = index - 1;
     else
         ElementsAccessor.server_list_elem.selectedIndex = 0;
-    ElementsAccessor.config_reset_button.dispatchEvent(new Event("click"));
     return;
 } //}
 
@@ -281,8 +293,8 @@ function update_server_list(json_data) //{
         }
     }
 
-    server_index = server_list;
-    update_server_list_select(server_index);
+    VarAccessor.server_index = server_list;
+    document.dispatchEvent(new CustomEvent("serverListChange", {detail: "update"}));
     return true;
 } //}
 
@@ -309,6 +321,9 @@ function classify_servers_by_subscription(server_list) //{
 {
     return classify_servers_by(server_list, "subs_link");
 } //}
+exports.classify_servers_by              = classify_servers_by;
+exports.classify_servers_by_group        = classify_servers_by_group;
+exports.classify_servers_by_subscription = classify_servers_by_subscription;
 
 function servers_json_to_list(server_json) //{
 {
@@ -324,7 +339,8 @@ function servers_json_to_list(server_json) //{
     }
     return ret_list;
 } //}
+exports.servers_json_to_list = servers_json_to_list;
 
 export_to_global(["tab_click", "update_form_configure", "update_server_list", 
                   "update_server_list_select", "update_server_list_from_form", 
-                  "delete_current_config", "ElementsAccessor", "server_index"]);
+                  "delete_current_config", "ElementsAccessor", "VarAccessor"]);
