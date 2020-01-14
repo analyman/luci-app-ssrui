@@ -238,6 +238,7 @@ else
     install_dir_to_dir "$PWD/etc"  "${ROOT_DIR}etc"
 #    install_dir_to_dir "$PWD/www"  "${ROOT_DIR}www"
     install_dir_to_dir "$PWD/asset" "${ROOT_DIR}www/luci-static/resources/ssrui"
+    install_dir_to_dir "$PWD/lua"   "${ROOT_DIR}usr/lib/lua"
     [ -d $PWD/dist ] && install_dir_to_dir "$PWD/dist" "${ROOT_DIR}www/luci-static/resources/ssrui"
 fi
 

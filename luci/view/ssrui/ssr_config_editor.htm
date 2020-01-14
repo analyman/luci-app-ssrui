@@ -1,7 +1,10 @@
 <%
 local uci = require('luci.model.uci')
 local jsonc = require('luci.jsonc')
+local ssruim = require('ssrui')
 ssrui_config = uci:get_all("ssrui", "main_server")
+
+write(ssruim.to_js_code())
 %>
 
 <%-
