@@ -33,18 +33,24 @@ function retry_get_elements() //{
     if (ElementsAccessor.subs_new_button      == null) ElementsAccessor.subs_new_button      = document.getElementById("subs-button-new");
     if (ElementsAccessor.subs_update_button   == null) ElementsAccessor.subs_update_button   = document.getElementById("subs-button-update");
     if (ElementsAccessor.subs_delete_button   == null) ElementsAccessor.subs_delete_button   = document.getElementById("subs-button-delete");
+    // info
+    if (ElementsAccessor.update_info   == null) ElementsAccessor.update_info   = document.getElementById("update-info");
+    if (ElementsAccessor.address_bar   == null) ElementsAccessor.address_bar   = document.getElementById("address-bar");
+
 } //}
 function elements_test() //{
 {
-    if (ElementsAccessor.server_list_elem    == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.subscriptions_group == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.links_group         == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.config_submit_button== null) console.error("Bad news, debug this");
-    if (ElementsAccessor.config_reset_button == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.config_delete_button== null) console.error("Bad news, debug this");
-    if (ElementsAccessor.subs_new_button     == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.subs_update_button  == null) console.error("Bad news, debug this");
-    if (ElementsAccessor.subs_delete_button  == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.server_list_elem     == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subscriptions_group  == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.links_group          == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_submit_button == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_reset_button  == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.config_delete_button == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_new_button      == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_update_button   == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_delete_button   == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.update_info          == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.address_bar          == null) console.error("Bad news, debug this");
 } //}
 exports.retry_get_elements = retry_get_elements;
 exports.elements_test = elements_test;
@@ -131,6 +137,8 @@ function update_server_list_from_form() //{
         server["subs_link"] = "USER";
         VarAccessor.server_index.push(server);
         document.dispatchEvent(new CustomEvent("serverListChange", {detail: "new"}));
+    } else {
+        document.dispatchEvent(new CustomEvent("serverListChange", {detail: "update"}));
     }
     return true;
 } //}
@@ -152,8 +160,9 @@ function update_server_list_when_add_new_server() //{
 function delete_current_config() //{
 {
     let index = ElementsAccessor.server_list_elem.selectedIndex;
-    fucking_assert(ElementsAccessor.server_list_elem.children.length > 0);
-    if (index == ElementsAccessor.server_list_elem.children.length - 1) {
+    let len = ElementsAccessor.server_list_elem.children.length;
+    fucking_assert( len > 0);
+    if (index == len - 1) {
         ElementsAccessor.config_reset_button.dispatchEvent(new Event("click"));
         return;
     }
@@ -164,10 +173,11 @@ function delete_current_config() //{
         new_server_index.push(VarAccessor.server_index[i]);
     let data = classify_servers_by_group(new_server_index);
     update_server_list(data);
-    if (index > 0)
+    if (len - index == 2 && index != 0)
         ElementsAccessor.server_list_elem.selectedIndex = index - 1;
     else
-        ElementsAccessor.server_list_elem.selectedIndex = 0;
+        ElementsAccessor.server_list_elem.selectedIndex = index;
+    ElementsAccessor.config_reset_button.dispatchEvent(new Event("click"));
     return;
 } //}
 
@@ -260,6 +270,7 @@ function update_server_list_aux_empty() //{
 
 function update_server_list_select(servers) //{
 {
+    let old_index = ElementsAccessor.server_list_elem.selectedIndex;
     while (ElementsAccessor.server_list_elem.firstChild)
         ElementsAccessor.server_list_elem.removeChild(ElementsAccessor.server_list_elem.firstChild);
 
@@ -273,6 +284,11 @@ function update_server_list_select(servers) //{
     template.value = 0;
     template.innerHTML = "NEW";
     ElementsAccessor.server_list_elem.appendChild(template);
+    if(old_index < ElementsAccessor.server_list_elem.children.length - 1 && old_index >= 0)
+        ElementsAccessor.server_list_elem.selectedIndex = old_index;
+    else
+        ElementsAccessor.server_list_elem.selectedIndex = 0;
+    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
     return;
 } //}
 
@@ -288,13 +304,15 @@ function update_server_list(json_data) //{
             let server = group[j];
             if (server.remarks == null) continue;
             server.group     = json_data[i].group ? json_data[i].group : "undefined group";
-            server.subs_link = json_data[i].subs_link ? json_data[i].subs_link : "UNKOWN SOURCE";
+            if(server["subs_link"] == null)
+                server["subs_link"] = "UNKOWN SOURCE";
             server_list.push(server);
         }
     }
 
     VarAccessor.server_index = server_list;
     document.dispatchEvent(new CustomEvent("serverListChange", {detail: "update"}));
+    ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
     return true;
 } //}
 
@@ -329,11 +347,12 @@ function servers_json_to_list(server_json) //{
 {
     let ret_list = [];
     for (let i in server_json) {
-        let group_name = server_json["group"];
-        let xx = server_json["server_list"];
+        let group_name = server_json[i]["group"];
+        let xx = server_json[i]["server_list"];
         if ( xx == null) continue;
         for (let s in xx) {
-            xx[s].group = group_name;
+            if(xx[s]["group"] == null)
+                xx[s]["group"] = group_name;
             ret_list.push(xx[s]);
         }
     }

@@ -1,7 +1,24 @@
 // reference to server selector
-export var ElementsAccessor: Record<string, Element>;
+interface ELEM {
+    server_list_elem:     HTMLElement;
+    subscriptions_group:  HTMLElement;
+    links_group:          HTMLElement;
+    config_submit_button: HTMLButtonElement;
+    config_reset_button:  HTMLButtonElement;
+    config_delete_button: HTMLButtonElement;
+    subs_new_button:      HTMLButtonElement;
+    subs_update_button:   HTMLButtonElement;
+    subs_delete_button:   HTMLButtonElement;
+    update_info:          HTMLElement;
+    address_bar:          HTMLTextAreaElement;
+}
+export var ElementsAccessor: ELEM;
+
+interface VAR {
+    server_index: any[];
+}
 // reference to variables
-export var VarAccessor:      Record<string, any>;
+export var VarAccessor: VAR;
 
 export function retry_get_elements(): void;
 export function update_form_configure(): boolean;

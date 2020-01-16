@@ -26,7 +26,6 @@ end
 -%>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 <script src="/luci-static/resources/ssrui/fucking.js"></script>
 
 <style>
@@ -38,6 +37,12 @@ end
         background-color: #AEAEFF;
     }
 </style>
+
+<div class="d-flex flex-column align-items-end">
+    <div id="update-info" class="d-none text-light rounded fade show w-75 mw-100">MESSAGE</div>
+    <textarea id="address-bar" rows="1" class="d-none text-light bg-info rounded fade show w-100 m-2 p-2" 
+        style="resize: none;" placeholder="Subscription Address"></textarea>
+</div>
 
 <div class="d-flex flex-column flex-grow-1">
 <div class="nav nav-pills nav-justified rounded border" role="tablist" id="nav-tab">
@@ -72,6 +77,29 @@ end
     height: 100%;
     resize: none;
 }
+
+#user-links-group li .table {
+    position: absolute;
+    max-width: 70%;
+    width: fit-content;
+    display: none;
+    margin-left: 10%
+}
+
+#user-links-group li:hover .table {
+    z-index: 3;
+    display: block;
+}
+
+#user-links-group tr:nth-child(2n+0) {
+    background-color: #EEFFEE;
+}
+#user-links-group tr:nth-child(2n+1) {
+    background-color: #FFEEFF;
+}
+#user-links-group td:nth-child(2n+1) {
+    font-weight: bold;
+}
 </style>
 
 <div class="d-flex flex-column flex-md-row align-itmes-start p-2 m-2 justify-content-left">
@@ -104,27 +132,27 @@ document.addEventListener("DOMContentLoaded", function() {
             <table class="table table-light table-borderless user-ssr-config-table">
                 <tr style="display: none">
                     <td>Name :</td>
-                    <td><input type="text" id="main-server-remarks" name="cbid.ssrui.main_server.remarks" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-remarks" name="cbid.ssrui.main_server.remarks" /><br /></td>
                 </tr>
                 <tr>
                     <td>Server :</td>
-                    <td><input type="text" id="main-server-server" name="cbid.ssrui.main_server.server" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-server" name="cbid.ssrui.main_server.server" /><br /></td>
                 </tr>
                 <tr>
                     <td>Server Port :</td>
-                    <td><input type="text" id="main-server-server-port" name="cbid.ssrui.main_server.server_port" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-server-port" name="cbid.ssrui.main_server.server_port" /><br /></td>
                 </tr>
                 <tr>
                     <td>Local Address :</td>
-                    <td><input type="text" id="main-server-local-address" name="cbid.ssrui.main_server.local_address" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-local-address" name="cbid.ssrui.main_server.local_address" /><br /></td>
                 </tr>
                 <tr>
                     <td>Local Port :</td>
-                    <td><input type="text" id="main-server-local-port" name="cbid.ssrui.main_server.local_port" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-local-port" name="cbid.ssrui.main_server.local_port" /><br /></td>
                 </tr>
                 <tr>
                     <td>Password :</td>
-                    <td><input type="password" id="main-server-password" name="cbid.ssrui.main_server.password" /><br /></td>
+                    <td><input autocomplete="on" type="password" id="main-server-password" name="cbid.ssrui.main_server.password" /><br /></td>
                 </tr>
                 <tr>
                     <td>Method :</td>
@@ -142,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </tr>
                 <tr>
                     <td>Protocol Parameter:</td>
-                    <td><input type="text" id="main-server-protoparam" name="cbid.ssrui.main_server.protoparam" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-protoparam" name="cbid.ssrui.main_server.protoparam" /><br /></td>
                 </tr>
                 <tr>
                     <td>Obfs :</td>
@@ -153,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </tr>
                 <tr>
                     <td>Obfs Parameter :</td>
-                    <td><input type="text" id="main-server-obfsparam" name="cbid.ssrui.main_server.obfsparam" /><br /></td>
+                    <td><input autocomplete="on" type="text" id="main-server-obfsparam" name="cbid.ssrui.main_server.obfsparam" /><br /></td>
                 </tr>
                 </table>
                 </fieldset>
@@ -241,8 +269,6 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
     <div class="user-flex-item user-ic m-2 p-2 flex-row">
         <div class="d-flex flex-column align-items-end">
-            <span class="text-light bg-info rounded fade show w-100 m-2 p-2">UPDATE INFO</span>
-            <textarea rows="1" class="text-light bg-info rounded fade show w-100 m-2 p-2" style="resize: none;" placeholder="Subscription Address"></textarea>
             <div class="d-flex flex-row m-2 user-button">
                 <button id="subs-button-new"    type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" 
                                                               style="flex-basis: 0;" > New </button>

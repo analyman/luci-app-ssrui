@@ -2,9 +2,35 @@
 
 function safe_base64_decoder(str: string): string //{
 {
-    str.replace("-", "+");
-    str.replace("_", "/");
-    return window.atob(str);
+    str = str.split("-").join("+");
+    str = str.split("_").join("/");
+    let res: string = "";
+    try {
+        res = window.atob(str);
+    } 
+    catch(err) {}
+    if (res != "") return res;
+
+    try {
+        res = window.atob(str.substr(0, str.length - 2)); // truncate last character
+    } 
+    catch(err) {}
+    if (res != "") return res;
+
+    let ss = res.length % 4;
+    try {
+    switch (ss) {
+        case 0: res = window.atob(str + "="); break;
+        case 1: res = window.atob(str + "aaa="); break;
+        case 2: res = window.atob(str + "aa="); break;
+        case 3: res = window.atob(str + "a="); break;
+    }
+    }
+    catch (err) {
+        console.warn("base64 \"" + str + "\"" + err.toString());
+        throw err;
+    }
+    return res;
 } //}
 
 export var default_local_address = "0.0.0.0";
@@ -63,7 +89,6 @@ export class SSRServer
         result["protocol"]      = this.protocol;
         result["obfsparam"]     = this.obfsparam;
         result["protoparam"]    = this.protoparam;
-        result["gorup"]         = this.protoparam;
         for(let i in this.extra_info)
             result[i] = this.extra_info[i];
         return result;
@@ -87,7 +112,7 @@ export class SSRSubscription
         /*   1          2          3          5              6           8          9       */
     );
 
-    public constructor(_URL: string, _groupName: string = "", _servers: SSRServer[] = []) //{
+    public constructor(_URL: string, _groupName: string = "UNKNOWN", _servers: SSRServer[] = []) //{
     {
         let url_match = _URL.match(SSRSubscription.url_pattern);
         if (url_match == null) throw "Invalidate URL \"" + _URL + "\"";
@@ -105,7 +130,7 @@ export class SSRSubscription
             let xhr = new XMLHttpRequest();
             xhr.timeout = 5 * 1000;
             xhr.onload = () => {
-                if(xhr.status >= 200 && xhr.status < 200)
+                if(xhr.status >= 200 && xhr.status < 300)
                     resolve(xhr.response);
                 else
                     reject({
@@ -124,88 +149,85 @@ export class SSRSubscription
         });
     } //}
 
-    public Subscribe(): boolean //{
+    public Subscribe(): Promise<boolean> //{
     {
-        let res: boolean = true;
         let xhr_promise = this.subscribe();
-        try {
-            xhr_promise.then(response => {
-                let dec1 = safe_base64_decoder(response);
-                return dec1.split(/\r?\n/);
-            }, error => {
-                console.warn("subscribe fail, response statusText: " + error.statusText);
-                throw "Network Error: " + error.toString();
-            })
-            .then((ssr_array: string[]) => {
-                let ssrKeyValuePair = [];
-                for (let i in ssrKeyValuePair) {
-                    let match = ssr_array[i].match(/^ssr:\/\/(.*)/);
-                    if (match) {
-                        try {
-                            let kv = safe_base64_decoder(match[1]);
-                            ssrKeyValuePair.push(kv);
-                        }
-                        catch {
-                            continue;
-                        }
-                    }
-                }
-                if (ssrKeyValuePair.length == 0) throw "Decode base64 fail.";
-                return ssrKeyValuePair;
-            })
-            .then((ssr_kv: string[]): any[] => {
-                return ssr_kv.map(ssr => {
-                    let server = {};
-                    let ss_split = ssr.split("?");
-                    let main_part = ss_split[0].split(":");
-                    if (main_part.length <= 6) return null;
-                    server["server"]      = main_part[0];
-                    server["server_port"] = main_part[1];
-                    server["protocol"]    = main_part[2];
-                    server["method"]      = main_part[3];
-                    server["obfs"]        = main_part[4];
-                    try {
-                        server["password"] = safe_base64_decoder(main_part[5]);
-                    } catch {return null;}
-                    let kvs = ss_split[1].split("&");
-                    for (let i in kvs) {
-                        let kv = kvs[i].split("=");
-                        if (kv.length==1)
-                            server[kv[0]] = "";
-                        else {
-                            try  {
-                                server[kv[0]] = safe_base64_decoder(kv[1]);
-                            } catch {
-                                server[kv[0]] = kv[1];
-                            }
-                        }
-                    }
-                    return server;
-                }).filter(x => x != null);
-            })
-            .then((servers: any[]) => {
-                if(servers.length == 0) throw "none of servers is valid";
-                this.servers = servers.map(x => new SSRServer(x));
-                for(let i in servers) {
-                    if (servers[i]["group"] != null) {
-                        this.groupName = servers[i]["group"];
-                        break;
-                    }
-                }
-            });
-        }
-        catch (error) {
+        function __errorhandle(error) {
             console.warn("subscribe fail, " + error.toString());
             this.error_msg = error.toString();
-            res = false;
         }
-        return res;
+        let errorhandle = __errorhandle.bind(this);
+        return xhr_promise.then(response => {
+            let dec1 = safe_base64_decoder(response);
+            return dec1.split(/\r?\n/).filter(x => (x as string).substr(0, 3).toLowerCase() == "ssr");
+        }, errorhandle)
+        .then((ssr_array: string[]) => {
+            let ssrKeyValuePair = [];
+            for (let i in ssr_array) {
+                let match = ssr_array[i].match(/^ssr:\/\/(.*)/);
+                if (match) {
+                    try {
+                        let kv = safe_base64_decoder(match[1]);
+                        ssrKeyValuePair.push(kv);
+                    }
+                    catch {
+                        continue;
+                    }
+                }
+            }
+            if (ssrKeyValuePair.length == 0) throw "Decode base64 fail.";
+            return ssrKeyValuePair;
+        }, errorhandle)
+        .then((ssr_kv: string[]): any[] => {
+            return ssr_kv.map(ssr => {
+                let server = {};
+                let ss_split = ssr.split("?");
+                let main_part = ss_split[0].split(":");
+                if (main_part.length < 6) return null;
+                server["server"]      = main_part[0];
+                server["server_port"] = main_part[1];
+                server["protocol"]    = main_part[2];
+                server["method"]      = main_part[3];
+                server["obfs"]        = main_part[4];
+                try {
+                    server["password"] = safe_base64_decoder(main_part[5]);
+                } catch {return null;}
+                let kvs = ss_split[1].split("&");
+                for (let i in kvs) {
+                    let kv = kvs[i].split("=");
+                    if (kv.length==1 || kv[1] == "")
+                        server[kv[0]] = "";
+                    else {
+                        try  {
+                            server[kv[0]] = window.decodeURIComponent(window.escape(safe_base64_decoder(kv[1])));
+                        } catch {
+                            server[kv[0]] = kv[1];
+                        }
+                    }
+                }
+                return server;
+            }).filter(x => x != null);
+        }, errorhandle)
+        .then(((servers: any[]) => {
+            if(servers == null || servers.length == 0) throw "none of servers is valid";
+            this.servers = servers.map(x => new SSRServer(x));
+            for(let i in servers) {
+                if (servers[i]["group"] != null) {
+                    this.groupName = servers[i]["group"];
+                    break;
+                }
+            }
+        }).bind(this), errorhandle).then(() => true, (err) => {errorhandle(err); return false;});
     } //}
 
     public toRecord(): Record<any, any> //{
     {
         if (this.servers.length == 0) return null;
-        let server_records = this.servers.map(x => x.toRecord());
+        let server_records = this.servers.map(x => {
+            let ret = x.toRecord();
+            ret["subs_link"] = this.URL;
+            return ret;
+        });
         return {
             group: this.groupName,
             server_list: server_records
