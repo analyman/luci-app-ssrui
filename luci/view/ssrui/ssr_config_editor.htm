@@ -39,16 +39,16 @@ end
 </style>
 
 <div class="d-flex flex-column align-items-end">
-    <div id="update-info" class="d-none text-light rounded fade show w-75 mw-100">MESSAGE</div>
+    <div id="update-info" class="d-none text-light rounded fade show w-75 mw-100"><%translate("MESSAGE")%></div>
     <textarea id="address-bar" rows="1" class="d-none text-light bg-info rounded fade show w-100 m-2 p-2" 
-        style="resize: none;" placeholder="Subscription Address"></textarea>
+              style="resize: none;" placeholder="<%:Subscription Address%>"></textarea>
 </div>
 
 <div class="d-flex flex-column flex-grow-1">
 <div class="nav nav-pills nav-justified rounded border" role="tablist" id="nav-tab">
-    <a class="nav-item nav-link active" id="nav-conf-tab" role="tab" href="#configuration">Configuration</a>
-    <a class="nav-item nav-link"        id="nav-subs-tab" role="tab" href="#subscription">Subscription</a>
-    <a class="nav-item nav-link"        id="nav-oths-tab" role="tab" href="#others">Others</a>
+    <a class="nav-item nav-link active" id="nav-conf-tab" role="tab" href="#configuration"><%:Configuration%></a>
+    <a class="nav-item nav-link"        id="nav-subs-tab" role="tab" href="#subscription"><%:Subscription%></a>
+    <a class="nav-item nav-link"        id="nav-oths-tab" role="tab" href="#others"><%:Others%></a>
 </div>
 <script type="text/javascript">tab_click("nav-tab");</script>
 
@@ -106,7 +106,7 @@ end
     <div class="d-flex flex-column flex-grow-1 flex-basis-0 flex-grow-1 p-2 m-2 bg-light border border-secondary rounded">
         <div class="d-flex flex-column user-select-box">
             <!-- TODO -->
-            <label class="mx-2 text-primary">Select SSR Server: </label>
+            <label class="mx-2 text-primary"><%:Select SSR Server%>: </label>
             <select id="user-server-list" class="flex-grow-1 border rounded-pill mx-3" name="what-server">
             </select>
 <script type="text/javascript">
@@ -120,76 +120,76 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
         </div>
         <div class="user-ping-btn mx-2 mt-5">
-            <input class="w-100 border rounded bg-dark text-light" type="button" value="TEST SERVER"/>
+            <input class="w-100 border rounded bg-dark text-light" type="button" value="<%:TEST SERVER%>"/>
         </div>
         <div class="d-flex flex-column user-ping-out mx-2 mt-1 h-100">
-            <textarea class="form-control textarea-shadow border-2" placeholder="Server Test Output" readonly></textarea>
+            <textarea class="form-control textarea-shadow border-2" placeholder="<%:Server Test Output%>" readonly></textarea>
         </div>
     </div>
     <div class="m-2 p-2 flex-grow-1">
         <fieldset>
-            <legend class="py-2 px-4 text-light bg-secondary rounded-pill">SSR Configuration Editor</legend>
+            <legend class="py-2 px-4 text-light bg-secondary rounded-pill"><%:SSR Configuration Editor%></legend>
             <table class="table table-light table-borderless user-ssr-config-table">
                 <tr style="display: none">
-                    <td>Name :</td>
+                    <td><%:Name%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-remarks" name="cbid.ssrui.main_server.remarks" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Server :</td>
+                    <td><%:Server%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-server" name="cbid.ssrui.main_server.server" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Server Port :</td>
+                    <td><%:Server Port%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-server-port" name="cbid.ssrui.main_server.server_port" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Local Address :</td>
+                    <td><%:Local Address%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-local-address" name="cbid.ssrui.main_server.local_address" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Local Port :</td>
+                    <td><%:Local Port%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-local-port" name="cbid.ssrui.main_server.local_port" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Password :</td>
+                    <td><%:Password%> :</td>
                     <td><input autocomplete="on" type="password" id="main-server-password" name="cbid.ssrui.main_server.password" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Method :</td>
+                    <td><%:Method%> :</td>
                     <td>
                         <select id="main-server-method" name="cbid.ssrui.main_server.method" class="w-100">
                         <% ssr_write_option("/etc/ssrui/method_list.json") %>
                         </select><br /></td>
                 </tr>
                 <tr>
-                    <td>Protocol :</td>
+                    <td><%:Protocol%> :</td>
                     <td>
                         <select id="main-server-protocol" name="cbid.ssrui.main_server.protocol" class="w-100">
                             <% ssr_write_option("/etc/ssrui/protocol_list.json") %>
                         </select><br /></td>
                 </tr>
                 <tr>
-                    <td>Protocol Parameter:</td>
+                    <td><%:Protocol Parameter%>:</td>
                     <td><input autocomplete="on" type="text" id="main-server-protoparam" name="cbid.ssrui.main_server.protoparam" /><br /></td>
                 </tr>
                 <tr>
-                    <td>Obfs :</td>
+                    <td><%:Obfs%> :</td>
                     <td>
                     <select id="main-server-obfs" name="cbid.ssrui.main_server.obfs" class="w-100">
                         <% ssr_write_option("/etc/ssrui/obfs_list.json") %>
                     </select><br /></td>
                 </tr>
                 <tr>
-                    <td>Obfs Parameter :</td>
+                    <td><%:Obfs Parameter%> :</td>
                     <td><input autocomplete="on" type="text" id="main-server-obfsparam" name="cbid.ssrui.main_server.obfsparam" /><br /></td>
                 </tr>
                 </table>
                 </fieldset>
         <div class="d-flex flex-row justify-content-end">
             <span class="d-flex flex-row mr-1 mt-2 w-50">
-        <button id="config-button-submit" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> Submit </button>
-        <button id="config-button-reset"  type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> Reset </button>
-        <button id="config-button-delete" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> Delete </button>
+            <button id="config-button-submit" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> <%:Submit%> </button>
+            <button id="config-button-reset"  type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> <%:Reset%> </button>
+            <button id="config-button-delete" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" style="flex-basis: 0;"> <%:Delete%> </button>
             </span>
         </div>
     <script type="text/javascript">
@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <div class="user-container p-2 m-1">
     <div class="user-flex-item user-ia m-2 p-2 user-bg-server rounded">
         <div class="w-100 d-flex flex-column">
-            <a href="#subscription-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Subscriptions:</a><br/>
+            <a href="#subscription-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary"><%:List of Subscriptions%>:</a><br/>
             <ul class="nobullet list-group" id="user-subscriptions-group"></ul>
         </div>
     </div>
@@ -271,17 +271,17 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="d-flex flex-column align-items-end">
             <div class="d-flex flex-row m-2 user-button">
                 <button id="subs-button-new"    type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" 
-                                                              style="flex-basis: 0;" > New </button>
+                                                              style="flex-basis: 0;" > <%:New%> </button>
                 <button id="subs-button-update" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" 
-                                                              style="flex-basis: 0;" > Update </button>
+                                                              style="flex-basis: 0;" > <%:Update%> </button>
                 <button id="subs-button-delete" type="button" class="button btn-primary mx-2 px-2 py-1 flex-grow-1" 
-                                                              style="flex-basis: 0;" > Delete </button>
+                                                              style="flex-basis: 0;" > <%:Delete%> </button>
             </div>
         </div>
     </div>
     <div class="user-flex-item user-ib m-2 p-2 user-bg-subscription rounded">
         <div class="w-100 d-flex flex-column">
-            <a href="#server-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary">List of Servers:</a><br/>
+            <a href="#server-list" class="ml-1 my-2 p-2 rounded text-light font-weight-bolder bg-secondary"><%:List of Servers%>:</a><br/>
             <ul class="nobullet list-group" id="user-links-group"></ul>
         </div>
     </div>
@@ -299,9 +299,9 @@ document.addEventListener("DOMContentLoaded", function() {
 </style>
 
 <div class="d-flex flex-column">
-    <span class="user-enable mt-3 px-2 text-weight-bold bg-secondary rounded-pill"><input type="checkbox" name="enable_server" class="m-2"/>Enable Server</span>
-    <span class="pl-3 mt-3 py-1 text-weight-bold bg-secondary rounded-pill">JSON File Editor</span>
-    <textarea rows="20" placeholder="SSR JSON CONFIGURATION FILE" class="user-json-output m-2 w-100"></textarea>
+    <span class="user-enable mt-3 px-2 text-weight-bold bg-secondary rounded-pill"><input type="checkbox" name="enable_server" class="m-2"/><%:Enable Server%></span>
+    <span class="pl-3 mt-3 py-1 text-weight-bold bg-secondary rounded-pill"><%:JSON File Editor%></span>
+    <textarea rows="20" placeholder="<%:SSR JSON CONFIGURATION FILE%>" class="user-json-output m-2 w-100"></textarea>
 </div>
 </div>
 </div>

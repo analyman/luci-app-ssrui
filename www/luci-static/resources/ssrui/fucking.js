@@ -282,7 +282,7 @@ function update_server_list_select(servers) //{
         ElementsAccessor.server_list_elem.appendChild(new_option);
     }
     template.value = 0;
-    template.innerHTML = "NEW";
+    template.innerHTML = CONS.NewOption;
     ElementsAccessor.server_list_elem.appendChild(template);
     if(old_index < ElementsAccessor.server_list_elem.children.length - 1 && old_index >= 0)
         ElementsAccessor.server_list_elem.selectedIndex = old_index;
