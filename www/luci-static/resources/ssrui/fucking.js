@@ -33,10 +33,13 @@ function retry_get_elements() //{
     if (ElementsAccessor.subs_new_button      == null) ElementsAccessor.subs_new_button      = document.getElementById("subs-button-new");
     if (ElementsAccessor.subs_update_button   == null) ElementsAccessor.subs_update_button   = document.getElementById("subs-button-update");
     if (ElementsAccessor.subs_delete_button   == null) ElementsAccessor.subs_delete_button   = document.getElementById("subs-button-delete");
+    if (ElementsAccessor.subs_syncro_button   == null) ElementsAccessor.subs_syncro_button   = document.getElementById("subs-button-sync");
+    if (ElementsAccessor.subs_confirm_button  == null) ElementsAccessor.subs_confirm_button  = document.getElementById("subs-button-confirm");
+    if (ElementsAccessor.test_output          == null) ElementsAccessor.test_output          = document.getElementById("user-test-output");
+    if (ElementsAccessor.test_button          == null) ElementsAccessor.test_button          = document.getElementById("user-test-button");
     // info
-    if (ElementsAccessor.update_info   == null) ElementsAccessor.update_info   = document.getElementById("update-info");
-    if (ElementsAccessor.address_bar   == null) ElementsAccessor.address_bar   = document.getElementById("address-bar");
-
+    if (ElementsAccessor.update_info          == null) ElementsAccessor.update_info          = document.getElementById("update-info");
+    if (ElementsAccessor.address_bar          == null) ElementsAccessor.address_bar          = document.getElementById("address-bar");
 } //}
 function elements_test() //{
 {
@@ -49,6 +52,10 @@ function elements_test() //{
     if (ElementsAccessor.subs_new_button      == null) console.error("Bad news, debug this");
     if (ElementsAccessor.subs_update_button   == null) console.error("Bad news, debug this");
     if (ElementsAccessor.subs_delete_button   == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_syncro_button   == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.subs_confirm_button  == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.test_button          == null) console.error("Bad news, debug this");
+    if (ElementsAccessor.test_output          == null) console.error("Bad news, debug this");
     if (ElementsAccessor.update_info          == null) console.error("Bad news, debug this");
     if (ElementsAccessor.address_bar          == null) console.error("Bad news, debug this");
 } //}
@@ -99,6 +106,7 @@ function update_form_configure() //{
         }
         to_update.setAttribute("value", value);
         to_update.value = value;
+        to_update.dispatchEvent(new CustomEvent("input"));
     }
         let remarks_elem = document.getElementById("main-server-remarks");
         if (remarks_elem == null) {console.warn("unexpected null"); return false;}
@@ -315,6 +323,7 @@ function update_server_list(json_data) //{
     ElementsAccessor.server_list_elem.dispatchEvent(new Event("change"));
     return true;
 } //}
+exports.update_server_list = update_server_list;
 
 
 function classify_servers_by(server_list, what) //{

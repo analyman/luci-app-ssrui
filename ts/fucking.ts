@@ -5,6 +5,9 @@ import {_EventTarget, UActiveChange, UContentChange, UServerListChange} from './
 import * as utils from './utils';
 import * as fucking from '../www/luci-static/resources/ssrui/fucking';
 import * as CONS from './constants';
+import * as input from './input';
+import * as controler from './controler';
+import * as cssinjector from './css_injector';
 
 // export constants to global scope
 window["CONS"] = {};
@@ -316,17 +319,66 @@ class MessageBar extends _EventTarget //{
         this.msgQueue               = [];
         this.amountOfTimeOfInvoking = 0;
     }
-    _show(): void {
+    _show(time: number = 3000): void {
         if(this.displayState) return;
+
+        let id = utils.makeid(16);
+        let css_template: string = 
+        `<style>
+        #${id} {
+            animation-name:   anim-${id};
+            animation-duration: ${time * 0.2 / 1000.0}s;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        @keyframes anim-${id} {
+            0%    {opacity: 0;} 
+            100%  {opcaity: 1;}
+        }
+        </style>`;
+        let newCss: Element = utils.createNodeFromHtmlString(css_template);
+        let prevSibling: Element = this.where.previousSibling as Element;
+        if(prevSibling == null || prevSibling.nodeName.toLowerCase() != "style") {
+            this.where.parentNode.insertBefore(newCss, this.where);
+        } else {
+            this.where.parentNode.replaceChild(newCss, prevSibling);
+        }
+
+        this.where.setAttribute("id", id);
         this.where.classList.remove("d-none"); 
         this.where.classList.add(this.displayClass);
         this.displayState = true;
     }
     _hide(): void {
         if(!this.displayState) return;
-        this.where.classList.remove(this.displayClass);
-        this.where.classList.add("d-none"); 
-        this.displayState = false;
+
+        let time: number = 800;
+        let id = utils.makeid(16);
+        let css_template: string = 
+        `<style>
+        #${id} {
+            animation-name:   anim-${id};
+            animation-duration: ${time / 1000.0}s;
+        }
+        @keyframes anim-${id} {
+            0%    {opacity: 1;} 
+            100%  {opacity: 0; display: none;}
+        }
+        </style>`;
+        let newCss: Element = utils.createNodeFromHtmlString(css_template);
+        let prevSibling: Element = this.where.previousSibling as Element;
+        if(prevSibling == null || prevSibling.nodeName.toLowerCase() != "style") {
+            this.where.parentNode.insertBefore(newCss, this.where);
+        } else {
+            this.where.parentNode.replaceChild(newCss, prevSibling);
+        }
+
+        this.where.setAttribute("id", id);
+        window.setTimeout((() => {
+            this.where.classList.remove(this.displayClass);
+            this.where.classList.add("d-none"); 
+            this.displayState = false;
+        }).bind(this), time);
     }
     __run(): void {
         if(this.displayState == true) return;
@@ -336,7 +388,7 @@ class MessageBar extends _EventTarget //{
         let i: any[] = this.msgQueue.splice(0, 1)[0];
         if(i.length == 2) {
             this.where.innerHTML = i[0];
-            this._show();
+            this._show(i[1]);
             window.setTimeout(function(obj: MessageBar) {
                 if(obj.amountOfTimeOfInvoking != ++keep) // this message had been cancelled
                     return;
@@ -388,17 +440,97 @@ class AddressBar //{
         this.where                  = target;
         this.displayClass           = displayClass;
     }
+    check_input(interval: number, first: boolean = true): void {
+        if(!first) {
+            if(this.displayState == false)
+                return;
+            if(this.where.value == "") {
+                this.hide();
+                return;
+            }
+        }
+        window.setTimeout(this.check_input.bind(this), interval, interval, false);
+    }
     show(): void {
         if(this.displayState) return;
-        this.where.classList.remove("d-none"); 
+
+        let id = utils.makeid(16);
+        let css_template: string = 
+        `<style>
+        #${id} {
+            animation-name:   anim-${id};
+            animation-duration: ${1200 / 1000.0}s;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        @keyframes anim-${id} {
+            0%    {width: 10%; } 
+            10%   {width: 15%; } 
+            20%   {width: 25%; } 
+            30%   {width: 45%; } 
+            40%   {width: 85%; } 
+            43%   {width: 100%; } 
+            46%   {width: 92.5%; } 
+            49%   {width: 89%; } 
+            52%   {width: 87.5%; } 
+            55%   {width: 87%; } 
+            65%   {width: 92%; } 
+            73%   {width: 100%; } 
+            80%   {width: 96%; } 
+            85%   {width: 95%; } 
+            90%   {width: 94.5%; } 
+            95%   {width: 96%; } 
+            100%  {width: 100%;}
+        }
+        </style>`;
+        let newCss: Element = utils.createNodeFromHtmlString(css_template);
+        let prevSibling: Element = this.where.previousSibling as Element;
+        if(prevSibling == null || prevSibling.nodeName.toLowerCase() != "style") {
+            this.where.parentNode.insertBefore(newCss, this.where);
+        } else {
+            this.where.parentNode.replaceChild(newCss, prevSibling);
+        }
+
+        this.where.setAttribute("id", id);
         this.where.classList.add(this.displayClass);
+        this.where.classList.remove("d-none"); 
+        
         this.displayState = true;
+        this.check_input(1000 * 5);
     }
+
     hide(): void {
         if(!this.displayState) return;
-        this.where.classList.remove(this.displayClass);
-        this.where.classList.add("d-none"); 
-        this.displayState = false;
+        let time: number = 1200;
+
+        let id = utils.makeid(16);
+        let css_template: string = 
+        `<style>
+        #${id} {
+            animation-name:   anim-${id};
+            animation-duration: ${time / 1000.0}s;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        @keyframes anim-${id} {
+            0%    {width: 100%; opacity: 1; } 
+            100%  {width: 0%; display: none; opacity: 0;}
+        }
+        </style>`;
+        let newCss: Element = utils.createNodeFromHtmlString(css_template);
+        let prevSibling: Element = this.where.previousSibling as Element;
+        if(prevSibling == null || prevSibling.nodeName.toLowerCase() != "style") {
+            this.where.parentNode.insertBefore(newCss, this.where);
+        } else {
+            this.where.parentNode.replaceChild(newCss, prevSibling);
+        }
+
+        this.where.setAttribute("id", id);
+        window.setTimeout((() => {
+            this.where.classList.remove(this.displayClass);
+            this.where.classList.add("d-none"); 
+            this.displayState = false;
+        }).bind(this), time);
     }
     validate(): boolean {
         return SSRSubscription.url_pattern.test(this.where.value);
@@ -513,3 +645,171 @@ fucking.ElementsAccessor.subs_delete_button.addEventListener("click", function()
 });
 
 }); // document.addEventListener()
+
+
+let url_of_server_list = "/cgi-bin/luci/admin/services/ssrui/request-json?what=server_list";
+// syncronize server with local data
+function post_subscription_json_data(): Promise<any> //{
+{
+    if(fucking.VarAccessor.server_index.length == 0) {
+        message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.EMPTYSERVERS}</div>`, 4 * 1000, true);
+        return;
+    }
+    let json_data = fucking.classify_servers_by_group(fucking.VarAccessor.server_index);
+    let send_this = JSON.stringify(json_data, null, 2);
+    if(send_this == null || send_this.length == 0) {
+        console.error("debug this");
+        message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.UNKNOWNERROR}</div>`, 4 * 1000, true);
+        return;
+    }
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", url_of_server_list)
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = () => {
+            if(xhr.status >= 200 && xhr.status < 300)
+                resolve(xhr.response);
+            else
+                reject(xhr.status);
+        }
+        xhr.send(send_this);
+    });
+} //}
+
+document.addEventListener("DOMContentLoaded", function() {
+    fucking.ElementsAccessor.subs_syncro_button.addEventListener("click", () => {
+        let timeout = 4 * 1000;
+        message_bar.ShowWithDuration(`<div class="bg-warning m-2 p-2">${CONS.SYNCROWITH}</div>`, timeout);
+        fucking.ElementsAccessor.subs_confirm_button.classList.remove("d-none");
+        window.setTimeout(() => {
+            fucking.ElementsAccessor.subs_confirm_button.classList.add("d-none");
+        }, timeout);
+    });
+    fucking.ElementsAccessor.subs_confirm_button.addEventListener("click", () => {
+        fucking.ElementsAccessor.subs_confirm_button.classList.add("d-none");
+        let xhr_prom = post_subscription_json_data();
+        if (xhr_prom == null) return;
+        xhr_prom.then(() => {
+            message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">${CONS.SYNCSUCCESS}</div>`, 3 * 1000, true);
+            return;
+        }, (statuscode) => {
+            message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.SYNCFAIL} with ${statuscode}</div>`, 3 * 1000, true);
+            return;
+        });
+    });
+});
+
+
+// syncronize ssr server infomation from server
+function fetch_info_promise(): Promise<any> //{
+{
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", url_of_server_list, true);
+        xhr.onload = () => {
+            if(xhr.status >= 200 && xhr.status < 300)
+                resolve(xhr.response);
+            else
+                reject(xhr.status);
+        }
+        xhr.send();
+    });
+} //}
+
+let init_interval_of_retry = 2 * 1000;
+function fetch_ssr_server_info(max_try: number, resolve: (resp: string) => void, 
+    reject: (status: number) => void, init_timeout: number = init_interval_of_retry): void //{
+{
+    let xhr_promise;
+    xhr_promise = fetch_info_promise();
+    xhr_promise.then((resp: string) => {
+        resolve(resp);
+        return;
+    }, (status: number) => {
+        if(max_try == 1) {
+            reject(status);
+            return;
+        }
+        window.setTimeout(fetch_ssr_server_info, init_timeout, max_try - 1, resolve, reject, init_timeout * 2);
+    });
+} //}
+
+document.addEventListener("DOMContentLoaded", function() {
+    fucking.update_server_list([]);
+    function error_handle(status: number) {
+        message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.GET_SERVER_FAIL}</div>`, 3 * 1000, true);
+    }
+    fetch_ssr_server_info(5, (resp: string) => {
+        let data = JSON.parse(resp);
+        if(data == null) {
+            error_handle(200);
+            return;
+        }
+        fucking.update_server_list(data);
+        message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">${CONS.GET_SERVER_SUCCESS}</div>`, 3 * 1000, true);
+    }, error_handle);
+    return;
+});
+
+let main_server_remarks:       HTMLInputElement;
+let main_server_server:        HTMLInputElement;
+let main_server_server_port:   HTMLInputElement;
+let main_server_local_address: HTMLInputElement;
+let main_server_local_port:    HTMLInputElement;
+let main_server_password:      HTMLInputElement;
+let main_server_method:        HTMLInputElement;
+let main_server_protocol:      HTMLInputElement;
+let main_server_protoparam:    HTMLInputElement;
+let main_server_obfs:          HTMLInputElement;
+let main_server_obfsparam:     HTMLInputElement;
+// validate input
+let x_button: input.ButtonValidity;
+document.addEventListener("DOMContentLoaded", function() {
+    main_server_remarks       = document.getElementById("main-server-remarks") as HTMLInputElement;
+    main_server_server        = document.getElementById("main-server-server") as HTMLInputElement;
+    main_server_server_port   = document.getElementById("main-server-server-port") as HTMLInputElement;
+    main_server_local_address = document.getElementById("main-server-local-address") as HTMLInputElement;
+    main_server_local_port    = document.getElementById("main-server-local-port") as HTMLInputElement;
+    main_server_password      = document.getElementById("main-server-password") as HTMLInputElement;
+    main_server_method        = document.getElementById("main-server-method") as HTMLInputElement;
+    main_server_protocol      = document.getElementById("main-server-protocol") as HTMLInputElement;
+    main_server_protoparam    = document.getElementById("main-server-protoparam") as HTMLInputElement;
+    main_server_obfs          = document.getElementById("main-server-obfs") as HTMLInputElement;
+    main_server_obfsparam     = document.getElementById("main-server-obfsparam") as HTMLInputElement;
+
+    x_button = new input.ButtonValidity(fucking.ElementsAccessor.config_submit_button);
+    let default_handle = (input: HTMLInputElement) => {
+        return (bl: boolean, ii: HTMLInputElement) => {
+            if(bl) {
+                input.classList.remove("bg-danger");
+            } else {
+                if(input.value == "") input.classList.remove("bg-danger");
+                else input.classList.add("bg-danger");
+            }
+        };
+    };
+    let ipv4_pattern   = /^(\d{1,3}\.){3}\d{1,3}$/;
+    let port_pattern   = /^\d{1,5}$/;
+    let gport_pattern  = /^\d{3,5}$/;
+    let domain_pattern = /^([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$/;
+    input.check_when_change(main_server_server,        (val: string) => domain_pattern.test(val) || ipv4_pattern.test(val), 
+        x_button, default_handle(main_server_server)); //
+    input.check_when_change(main_server_remarks,       (val: string) => val != "",               x_button, default_handle(main_server_remarks));
+    input.check_when_change(main_server_server_port,   (val: string) => port_pattern.test(val),  x_button, default_handle(main_server_server_port)); //
+    input.check_when_change(main_server_local_address, (val: string) => ipv4_pattern.test(val),  x_button, default_handle(main_server_local_address)); //
+    input.check_when_change(main_server_local_port,    (val: string) => gport_pattern.test(val), x_button, default_handle(main_server_local_port)); //
+    input.check_when_change(main_server_password,      (val: string) => val != "",               x_button, default_handle(main_server_password));
+    input.check_when_change(main_server_method,        (val: string) => val != "",               x_button, default_handle(main_server_method));
+    input.check_when_change(main_server_protocol,      (val: string) => val != "",               x_button, default_handle(main_server_protocol));
+//    input.check_when_change(main_server_protoparam,    (val: string) => val != "", x_button, default_handle(main_server_protoparam));
+    input.check_when_change(main_server_obfs,          (val: string) => val != "",               x_button, default_handle(main_server_obfs));
+//    input.check_when_change(main_server_obfsparam,     (val: string) => val != "", x_button, default_handle(main_server_obfsparam));
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    let css_injector = new cssinjector.CSSInjector("_inject_css_");
+    let hello = new controler.Menu(css_injector, "<span><a href='#how'>HOW DARE YOU</a></span>", "hello-gfw", true);
+    hello.append_sub_item("<a href=\"#\">Hello </a>");
+    hello.append_sub_item("<a href=\"#\">Hello You</a>");
+});
+

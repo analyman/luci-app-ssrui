@@ -23,6 +23,14 @@ export var UPDATEIT    = 'Please subscribe new ssr subscription in order to keep
 export var GIVEMEADDR  = 'Give me a address !!!';
 export var DONTTRYIT   = "don't try this, no result !!!";
 export var SUBSFAIL    = "Subscribe fail !!!";
+export var SYNCROWITH  = "syncronize server with local data ? If you confirm to do that, click confirm button.";
+export var EMPTYSERVERS = "There is none of valid server, failed.";
+export var UNKNOWNERROR = "UNKOWN ERROR !";
+export var SYNCFAIL     = "Syncronization fail";
+export var SYNCSUCCESS  = "Syncronization success";
+export var GET_SERVER_FAIL    = "Get ssr subscription info from server fail, refresh this page to retry";
+export var GET_SERVER_SUCCESS = "Get ssr subscription info from server success";
+
 if (window.navigator.language == "en") {
     NewOption     = "添加";
     NewButtonName = "添加";
@@ -47,4 +55,11 @@ if (window.navigator.language == "en") {
     GIVEMEADDR  = '来个正确的地址.';
     DONTTRYIT   = "不要做没有结果的事情";
     SUBSFAIL    = "订阅失败啦!";
+    SYNCROWITH  = "是否将服务器订阅数据与本地同步? 如果确认, 点击确认按钮.";
+    EMPTYSERVERS = "想要同步, 先添加服务器或者订阅, 再见!";
+    UNKNOWNERROR = "未知错误";
+    SYNCFAIL     = "同步失败";
+    SYNCSUCCESS  = "同步成功";
+    GET_SERVER_FAIL    = "获得订阅信息失败, 刷新页面重试";
+    GET_SERVER_SUCCESS = "获得订阅信息成功";
 }

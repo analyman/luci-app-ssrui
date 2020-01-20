@@ -9,6 +9,10 @@ interface ELEM {
     subs_new_button:      HTMLButtonElement;
     subs_update_button:   HTMLButtonElement;
     subs_delete_button:   HTMLButtonElement;
+    subs_syncro_button:   HTMLButtonElement;
+    subs_confirm_button:  HTMLButtonElement;
+    test_button:          HTMLButtonElement;
+    test_output:          HTMLTextAreaElement;
     update_info:          HTMLElement;
     address_bar:          HTMLTextAreaElement;
 }

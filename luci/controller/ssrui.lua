@@ -88,7 +88,7 @@ function handle_post_json()
     local http_msg = luci.http.context.request.message
     if http_msg == nil or http_msg.params == nil then 
         if http_msg == nil then
-            luci.http.status(401, "FUCK")
+            luci.http.status(400, "FUCK")
         else
             luci.http.status(400, "Bad Request")
         end
@@ -108,9 +108,14 @@ function handle_post_json()
         luci.http.status(404, "Not Found")
         return 1
     end
+    local content, length = luci.http.content()
+    if(length == 0) then
+        luci.http.status(400, "Bad Request")
+        return 1
+    end
     os.remove(write_back)
     local fd = io.open(write_back, "w")
-    fd:write(luci.http.content())
+    fd:write(content)
     fd:close()
     luci.http.status(200, "OK")
     return 0
