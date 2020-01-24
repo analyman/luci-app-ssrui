@@ -15,6 +15,12 @@ interface ELEM {
     test_output:          HTMLTextAreaElement;
     update_info:          HTMLElement;
     address_bar:          HTMLTextAreaElement;
+    gfw_menu:             HTMLElement;
+    gfw_list:             HTMLElement;
+    gfw_rename:           HTMLButtonElement;
+    gfw_update:           HTMLButtonElement;
+    gfw_delete:           HTMLButtonElement;
+    gfw_post:           HTMLButtonElement;
 }
 export var ElementsAccessor: ELEM;
 

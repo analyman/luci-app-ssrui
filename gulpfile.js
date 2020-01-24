@@ -5,7 +5,10 @@ var tsify = require('tsify');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
 
-gulp.task('default', function () {
+var sass = require('gulp-sass');
+sass.compiler = require('dart-sass');
+
+gulp.task("ts2js", function () {
         return browserify({
                     basedir: '.',
                     debug: true,
@@ -25,3 +28,12 @@ gulp.task('default', function () {
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('dist'));
 });
+
+gulp.task("sass", function() {
+    return gulp.src("./css/*.scss")
+    .pipe(sass().on("error", sass.logError))
+    .pipe(gulp.dest("./dist"));
+});
+
+gulp.task("default", gulp.parallel("ts2js", "sass"));
+

@@ -31,6 +31,12 @@ export var SYNCSUCCESS  = "Syncronization success";
 export var GET_SERVER_FAIL    = "Get ssr subscription info from server fail, refresh this page to retry";
 export var GET_SERVER_SUCCESS = "Get ssr subscription info from server success";
 
+export var TEST_FAIL = "TEST WITH NO RESULT, FAIL!";
+export var TEST_SUCCESS = "Get the test result";
+export var TEST_WAIT = "Already send test request, please wait a moment";
+
+export var INPUT_NAME = "Input the name of this url";
+
 if (window.navigator.language == "en") {
     NewOption     = "添加";
     NewButtonName = "添加";
@@ -62,4 +68,10 @@ if (window.navigator.language == "en") {
     SYNCSUCCESS  = "同步成功";
     GET_SERVER_FAIL    = "获得订阅信息失败, 刷新页面重试";
     GET_SERVER_SUCCESS = "获得订阅信息成功";
+
+    TEST_FAIL    = "测试没结果!";
+    TEST_SUCCESS = "已更新测试结果";
+    TEST_WAIT    = "已经在测试中, 请稍等!";
+
+    INPUT_NAME = "输入这个URL的命名";
 }

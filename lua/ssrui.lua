@@ -106,4 +106,33 @@ function module.to_js_code()
     return "<script type=\"text/javascript\">\n" .. ret_string .. "</script>\n"
 end
 
-return module
+function module.test_ssr_server(server, port)
+    local stat = os.execute("/usr/bin/test_server.sh " .. server .. " " .. port .. " 1>/tmp/tout.txt 2>&1")
+    local out  = io.open("/tmp/tout.txt", "r")
+    local res  = out:read("*a")
+    os.remove("/tmp/tout.txt")
+    return res
+end
+
+function module.fhash(str)
+    assert(type(str) == "string")
+    local hash = 0
+    local ss
+    local i = 1
+    while (i<=str:len()) do
+        ss = string.byte(str, i)
+        hash = (hash * 32 - hash) % 2^32 + ss
+        i = i + 1
+    end
+    return hash
+end
+
+function main()
+    print("main doesn't implement")
+end
+
+if pcall(debug.getlocal, 4, 1) then
+    return module
+else
+    main()
+end

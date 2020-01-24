@@ -4,6 +4,8 @@ local string = require('string')
 local table  = require('table')
 local jsonc  = require('luci.jsonc')
 
+local ssrui = require('ssrui')
+
 module("luci.controller.ssrui", package.seeall)
 function index()
 		if not nixio.fs.access("/etc/config/ssrui") then
@@ -14,6 +16,8 @@ function index()
 	page.dependent = true
 	entry({"admin", "services", "ssrui", "status"}, call("act_status")).leaf=true
     entry({"admin", "services", "ssrui", "request-json"}, call("handle_request_json")).leaf=true
+    entry({"admin", "services", "ssrui", "test-server"},  call("test_server")).leaf=true
+    entry({"admin", "services", "ssrui", "gfw"},  call("test_server")).leaf=true
 end
 
 function act_status()
@@ -119,4 +123,32 @@ function handle_post_json()
     fd:close()
     luci.http.status(200, "OK")
     return 0
+end
+
+function test_server()
+    if luci.http.context.request == nil then
+        luci.http.status(500, "Internal Server Error")
+        return 1
+    end
+    local content, len = luci.http.content()
+    if content == nil or len == 0 then
+        luci.http.status(400, "Bad Request")
+        return
+    end
+    local arg = jsonc.parse(content)
+    if arg == nil then
+        luci.http.status(401, "Bad Request")
+    end
+    local server = arg["server"]
+    local port   = arg["port"]
+    if server == nil or port == nil then
+        luci.http.status(402, "Bad Request")
+    end
+    local result = ssrui.test_ssr_server(server, port)
+    if result == nil or result == "" then
+        luci.http.status(500, "Internal Server Error")
+    end
+    luci.http.status(200, "OK")
+    luci.http.write(result)
+    return
 end

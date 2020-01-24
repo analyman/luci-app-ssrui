@@ -1,0 +1,323 @@
+/* SASS */
+@use "../node_modules/bootstrap/scss/bootstrap.scss" as bs;
+
+// color //{
+$primary-color: #EE6352;
+$youtube: #D16E8D;
+$articles: #FFAC83;
+$community: #3F78C9;
+$courses: #49C4A3;
+$white-color: #FFF;
+$black-color: #444A51;
+
+$lighten: 5;
+$darken: 25;
+
+$colors: (
+    primary: (
+        base: $primary-color,
+        light: lighten($primary-color, $lighten),
+        dark: darken($primary-color, $darken),
+    ),
+    yt: (
+        base: $youtube,
+        light: lighten($youtube, $lighten),
+        dark: darken($youtube, $darken),
+    ),
+    articles: (
+        base: $articles,
+        light: lighten($articles, $lighten),
+        dark: darken($articles, $darken),
+    ),
+    com: (
+        base: $community,
+        light: lighten($community, $lighten),
+        dark: darken($community, $darken),
+    ),
+    course: (
+        base: $courses,
+        light: lighten($courses, $lighten),
+        dark: darken($courses, $darken),
+    ),
+    neutral: ( 
+        base: #69777F,
+        light: #B2CAD8,
+        dark: $black-color,
+    ),
+    white: (
+        base: $white-color,
+        light: lighten($white-color, $lighten),
+        dark: darken($white-color, $darken),
+    ),
+);
+
+@function clr($base, $shade: base) {
+    $color: map-get(map-get($colors, $base), $shade);
+    @return $color;
+}
+//}
+
+// list button mixin //{
+@mixin list-button-common {
+    @include bs.button-size(0.5rem, 0.60rem, 100%, 100%, 0.33rem);
+    box-sizing: border-box;
+    list-style-type: none;
+    margin: 0.33rem 0.42rem 0.22rem 0.13rem;
+    border: 0.05rem solid;
+    border-color: darken(white, 8) !IMPORTANT;
+}
+
+@mixin list-button {
+    @include list-button-common;
+    @include bs.button-variant(darken(clr(white, base), 1), #111);
+}
+
+@mixin list-button-active {
+    @include list-button-common;
+    @include bs.button-variant(bs.color("blue"), clr(course, dark));
+}
+//}
+
+$top_bar_color: clr(yt,light);
+#gfw-list //{
+{
+    a:hover {
+        text-decoration: none;
+    }
+    & > div {
+        display: flex;
+        flex-flow: column;
+        align-items: flex-end;
+    }
+    span {
+        display: block;
+        width: 100%;
+        background: #{$top_bar_color};
+        @include bs.border-radius(0.25rem);
+        a {
+            width: 100%;
+            font-size: 110%;
+            padding: 0.25rem;
+        }
+        margin: 0.4rem 0rem;
+        padding: 0.52rem 0.63rem;
+    }
+    ul, ol {
+        width: 90%;
+        margin: 0px;
+    }
+    li {
+        @include list-button;
+    }
+    li.c-active {
+        @include list-button-active;
+        a {
+            color: white;
+        }
+    }
+    input {
+        width: 100%;
+        border: 0px;
+        background-color: darken(white, 1);
+    }
+} //}
+#gfw-text //{
+{
+    display: block;
+    box-sizing: border-box;
+    textarea {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        resize: none;
+        padding: 0.22rem;
+        background-color: darken(white, 15);
+    }
+    .gfw-title {
+        @include bs.border-radius(0.5rem);
+        font-size: 110%;
+        background: #{$top_bar_color};
+        margin: 0.4rem 0rem;
+        padding: 0.52rem 0.63rem;
+    }
+} //}
+
+// media part of gfw list //{
+@mixin less_720px {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0.5rem 0.5rem;
+    margin: 0.5rem 0.5rem;
+
+    #gfw-list {width: 100%;}
+    #gfw-text {
+        width: 100%;
+        margin: 0.0rem 0.2rem 0.2rem 0rem;
+    }
+}
+
+@mixin ge_720px {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0.5rem 0.5rem;
+    margin: 0.5rem 0.5rem;
+
+    #gfw-list {width: 30%;}
+    #gfw-text {
+        width: 70%;
+        margin: 0.0rem 0.2rem 0.2rem 2.8rem;
+    }
+}
+#gfw-all {
+    @media (max-width: 719px) {
+        @include less_720px;
+    }
+    @media (min-width: 720px) {
+        @include ge_720px;
+    }
+} //}
+
+// menu button mixin //{
+@mixin menu-button-common {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0.2rem 0.12rem;
+    @include bs.button-size(1.2rem, 1.3rem, 100%, 100%, 0.45rem);
+}
+@mixin menu-button {
+    @include menu-button-common;
+    background-color: darken(white, 2);
+}
+@mixin menu-button-hover  {
+    @include menu-button-common;
+    background-color: darken(bs.color("blue"), 2);
+}
+//}
+
+#gfw-menu //{
+{
+    @include bs.border-radius(0.45rem);
+    background-color: darken(white, 5);
+    display: block;
+    position: absolute;
+    width: 200px;
+    top: 0px;
+    left: 0px;
+    button {
+        @include menu-button;
+    }
+    button:hover {
+        @include menu-button-hover;
+    }
+} //}
+
+// legacy css //{
+/* fix a dropdown menu problem caused by including bootstrap */
+.dropdown:hover > .dropdown-menu {
+    display: block;
+}
+
+// hover the navigation bar
+#nav-tab .nav-item:hover {
+    background-color: #AEAEFF;
+}
+
+// ssr configuration interface
+.user-ssr-config-table input, .user-ssr-config-table select{
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 0;
+}
+.user-ssr-config-table tr td:first-child {
+    font-weight: bolder;
+}
+.user-ssr-config-table tr:nth-child(even) {
+    background-color: #E2E0E0;
+}
+.user-ssr-config-table tr:nth-child(odd) {
+    background-color: #F2F2F0;
+}
+.user-ping-out textarea {
+    box-sizing: border-box;
+    height: 100%;
+    resize: none;
+}
+
+#user-links-group li .table {
+    position: absolute;
+    max-width: 70%;
+    width: fit-content;
+    display: none;
+    margin-left: 10%
+}
+#user-links-group li:hover .table {
+    z-index: 3;
+    display: block;
+}
+#user-links-group tr:nth-child(2n+0) {
+    background-color: #EEFFEE;
+}
+#user-links-group tr:nth-child(2n+1) {
+    background-color: #FFEEFF;
+}
+#user-links-group td:nth-child(2n+1) {
+    font-weight: bold;
+}
+
+.user-container {
+    display: flex;
+    flex-flow: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.nobullet {
+    list-style-type: none;
+}
+.user-bg-server {
+    background-image: linear-gradient(to bottom, rgba(220, 220, 233, 0.8), rgba(220, 255, 240, 0.5));
+}
+.user-container a {
+    text-decoration: none;
+}
+
+.user-bg-subscription {
+    background-image: linear-gradient(to bottom, rgba(220, 255, 240, 0.5), rgba(220, 220, 233, 0.8));
+}
+
+.user-container .user-flex-item, .user-container .user-button {
+    width: 100%;
+}
+
+@media only screen and (min-width: 720px) {
+    .user-container .user-ia {
+        order: 1;
+        width: 37%
+    }
+    .user-container .user-ib {
+        order: 2;
+        width: 57%
+    }
+    .user-container .user-ic {
+        order: 3;
+    }
+    .user-container .user-ic .user-button {
+        width: 50%
+    }
+}
+@media only screen and (min-width: 900px) {
+    .user-container .user-ic .user-button {
+        width: 38%
+    }
+}
+
+.user-enable {
+    width: 100%;
+    border-bottom: 1.5px #EEFFEE;
+}
+.user-json-output {
+    background-color: #CCCCCC;
+} //}

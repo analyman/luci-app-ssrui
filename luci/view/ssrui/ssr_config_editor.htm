@@ -26,18 +26,8 @@ end
 -%>
 <div id="_inject_css_"></div>
 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link   rel="stylesheet" href="/luci-static/resources/ssrui/ssrui.css">
 <script src="/luci-static/resources/ssrui/fucking.js"></script>
-
-<style>
-    /* fix a dropdown menu problem caused by including bootstrap */
-    .dropdown:hover > .dropdown-menu {
-        display: block;
-    }
-    #nav-tab .nav-item:hover {
-        background-color: #AEAEFF;
-    }
-</style>
 
 <div class="d-flex flex-column align-items-end">
     <div id="update-info" class="d-none text-light rounded fade show w-75 mw-100"><%translate("MESSAGE")%></div>
@@ -55,55 +45,6 @@ end
 <script type="text/javascript">tab_click("nav-tab");</script>
 
 <div class="tab-pane" id="nav-conf-content" role="tabpanel" style="display: block;">
-<style>
-.user-ssr-config-table input, .user-ssr-config-table select{
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 2px 2px 0 0;
-}
-
-.user-ssr-config-table tr td:first-child {
-    font-weight: bolder;
-}
-
-.user-ssr-config-table tr:nth-child(even) {
-    background-color: #E2E0E0;
-}
-
-.user-ssr-config-table tr:nth-child(odd) {
-    background-color: #F2F2F0;
-}
-
-.user-ping-out textarea {
-    box-sizing: border-box;
-    height: 100%;
-    resize: none;
-}
-
-#user-links-group li .table {
-    position: absolute;
-    max-width: 70%;
-    width: fit-content;
-    display: none;
-    margin-left: 10%
-}
-
-#user-links-group li:hover .table {
-    z-index: 3;
-    display: block;
-}
-
-#user-links-group tr:nth-child(2n+0) {
-    background-color: #EEFFEE;
-}
-#user-links-group tr:nth-child(2n+1) {
-    background-color: #FFEEFF;
-}
-#user-links-group td:nth-child(2n+1) {
-    font-weight: bold;
-}
-</style>
-
 <div class="d-flex flex-column flex-md-row align-itmes-start p-2 m-2 justify-content-left">
     <div class="d-flex flex-column flex-grow-1 flex-basis-0 flex-grow-1 p-2 m-2 bg-light border border-secondary rounded">
         <div class="d-flex flex-column user-select-box">
@@ -205,56 +146,6 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
 </div>
 
 <div id="nav-subs-content" class="tab-pane" role="tabpanel" style="display: none;">
-<style type="text/css">
-.user-container {
-    display: flex;
-    flex-flow: row;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.nobullet {
-    list-style-type: none;
-}
-
-.user-bg-server {
-    background-image: linear-gradient(to bottom, rgba(220, 220, 233, 0.8), rgba(220, 255, 240, 0.5));
-}
-
-.user-container a {
-    text-decoration: none;
-}
-
-.user-bg-subscription {
-    background-image: linear-gradient(to bottom, rgba(220, 255, 240, 0.5), rgba(220, 220, 233, 0.8));
-}
-
-.user-container .user-flex-item, .user-container .user-button {
-    width: 100%;
-}
-
-@media only screen and (min-width: 720px) {
-    .user-container .user-ia {
-        order: 1;
-        width: 37%
-    }
-    .user-container .user-ib {
-        order: 2;
-        width: 57%
-    }
-    .user-container .user-ic {
-        order: 3;
-    }
-    .user-container .user-ic .user-button {
-        width: 50%
-    }
-}
-@media only screen and (min-width: 900px) {
-    .user-container .user-ic .user-button {
-        width: 38%
-    }
-}
-</style>
 <div class="user-container p-2 m-1">
     <div class="user-flex-item user-ia m-2 p-2 user-bg-server rounded">
         <div class="w-100 d-flex flex-column">
@@ -286,19 +177,25 @@ document.getElementById("user-server-list").addEventListener("change", update_fo
     </div>
 </div>
 </div>
-<div class="tab-pane" id="nav-gfw-content" role="tabpanel" style="display: block;">
-    <div id="hello-gfw">hello</div>
+
+<div class="tab-pane" id="nav-gfw-content" role="tabpanel"  style="display: none;">
+    <div id="gfw-all">
+        <div id="gfw-list"></div>
+        <div id="gfw-menu">
+            <button id="gfw-update" type="button"><%:Update%></button>
+            <button id="gfw-rename" type="button"><%:Rename%></button>
+            <button id="gfw-post"   type="button"><%:Post to Server%></button>
+            <button id="gfw-delete" type="button"><%:Delete%></button>
+        </div>
+        <div id="gfw-text">
+            <div id="temp">
+                <div class="gfw-title">GFW LIST</div>
+                <textarea placeholder="<%:GFW LIST%>" rows=20></textarea>
+            </div>
+        </div>
+    </div>
 </div>
 <div id="nav-oths-content" class="tab-pane" role="tabpanel" style="display: none;">
-<style rel="text/css">
-.user-enable {
-    width: 100%;
-    border-bottom: 1.5px #EEFFEE;
-}
-.user-json-output {
-    background-color: #CCCCCC;
-}
-</style>
 
 <div class="d-flex flex-column">
     <span class="user-enable mt-3 px-2 text-weight-bold bg-secondary rounded-pill">

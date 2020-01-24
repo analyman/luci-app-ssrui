@@ -1,0 +1,59 @@
+#!/bin/sh /etc/rc.common
+
+PID_FILE="/var/run/ssrui.pid"
+SSR_CONF_JSON="/etc/ssrui/shadowsocksr.json"
+SSR_REDIR=$(which ssr-redir || echo "/usr/sbin/ssr-redir")
+SSR_START="$SSR_REDIR -u -c ${SSR_CONF_JSON} -f ${PID_FILE}"
+
+EXTRA_COMMANDS="status"
+EXTRA_HELP="        status  Show service status"
+
+[ ! -x ${SSR_REDIR} ] && echo "need ssr-redir" >&2 && exit 1
+
+update_json_from_config()
+{
+    lua /etc/ssrui/update_json.lua
+    return $?
+}
+
+start()
+{
+    update_json_from_config || (echo "FAULT" >&2 && exit 1)
+    $SSR_START
+}
+
+stop()
+{
+    for i in $(pgrep "ssr-redir"); do
+        kill -9 $i 1>/dev/null 2>&1
+    done
+    [ -f ${PID_FILE} ] && rm -f ${PID_FILE} 1>/dev/null 2>&1
+}
+
+restart()
+{
+    stop && sleep 1 && start
+}
+
+status()
+{
+    if [ -f ${PID_FILE} ]; then
+        RRR=1
+        pid=$(cat ${PID_FILE})
+        for i in $(pgrep "ssr-redir"); do
+            if [ "$i" == "$pid" ]; then
+                RRR=0
+                break
+            fi
+        done
+        if [ $RRR -eq 1 ]; then
+            rm -f ${PID_FILE}
+            echo "Status: STOP"
+        else
+            echo "Status: RUNNING"
+            echo "$(lua /etc/ssrui/get_status.lua)"
+        fi
+    else
+        echo "Status: STOP"
+    fi
+}

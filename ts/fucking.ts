@@ -6,8 +6,9 @@ import * as utils from './utils';
 import * as fucking from '../www/luci-static/resources/ssrui/fucking';
 import * as CONS from './constants';
 import * as input from './input';
-import * as controler from './controler';
+import * as controller from './controller';
 import * as cssinjector from './css_injector';
+import * as gfw from './gfw_operation';
 
 // export constants to global scope
 window["CONS"] = {};
@@ -44,6 +45,7 @@ function add_new_subscription(url) //{
 
 document.addEventListener("DOMContentLoaded", function() {
     fucking.retry_get_elements();
+    console.log(gfw.fhash("hello"));
 
     fucking.ElementsAccessor.subscriptions_group.addEventListener(UContentChange, function() {
         let list: any[] = fucking.classify_servers_by_subscription(fucking.VarAccessor.server_index);
@@ -806,10 +808,175 @@ document.addEventListener("DOMContentLoaded", function() {
 //    input.check_when_change(main_server_obfsparam,     (val: string) => val != "", x_button, default_handle(main_server_obfsparam));
 });
 
-document.addEventListener("DOMContentLoaded", function() {
-    let css_injector = new cssinjector.CSSInjector("_inject_css_");
-    let hello = new controler.Menu(css_injector, "<span><a href='#how'>HOW DARE YOU</a></span>", "hello-gfw", true);
-    hello.append_sub_item("<a href=\"#\">Hello </a>");
-    hello.append_sub_item("<a href=\"#\">Hello You</a>");
+// context menu for gfw list //{
+function show_menu(x: number, y: number) {
+    fucking.ElementsAccessor.gfw_menu.style.left = x.toString() + "px";
+    fucking.ElementsAccessor.gfw_menu.style.top  = y.toString() + "px";
+    fucking.ElementsAccessor.gfw_menu.style.display = "block";
+    utils.assert(selected_index != -1);
+    if(selected_index <= 1) {
+        fucking.ElementsAccessor.gfw_delete.disabled = true;
+        fucking.ElementsAccessor.gfw_rename.disabled = true;
+    } else {
+        fucking.ElementsAccessor.gfw_delete.disabled = false;
+        fucking.ElementsAccessor.gfw_rename.disabled = false;
+    }
+}
+function hide_menu() {
+    fucking.ElementsAccessor.gfw_menu.style.display = "none";
+}
+//}
+
+let selected_elem: HTMLElement = null;
+let selected_index: number     = -1;
+let css_injector:  cssinjector.CSSInjector;
+let gfw_list_list: controller.Menu;
+let gfw_text_view: controller.MutexView;
+// call only once
+function __init_list_a() //{
+{
+    css_injector  = new cssinjector.CSSInjector("_inject_css_");
+    gfw_list_list = new controller.Menu(css_injector, "<a href='#how'>List of GFW List</a>", "gfw-list", true);
+    gfw_text_view = new controller.MutexView(css_injector, "temp", "gfw-text");
+
+    gfw_list_list.addEventListener("delete", (earg: CustomEvent) => {
+        gfw_text_view.delete_with_index(earg.detail.index);
+    });
+
+    gfw_list_list.addEventListener("insert", (earg: CustomEvent) => {
+        gfw_text_view.new_with_template(earg.detail.index);
+    });
+
+    gfw_list_list.addEventListener("new-item", (earg: CustomEvent) => {
+        let temp_name = utils.makeid(8);
+        let url = earg.detail.target.firstChild.innerText;
+        (earg.detail.target as any).extra_info = {url: url};
+        earg.detail.target.firstChild.innerHTML = temp_name;
+        let name = window.prompt(`${CONS.INPUT_NAME}`, temp_name);
+        earg.detail.target.firstChild.innerText = name;
+        earg.detail.target.firstChild.setAttribute("href", "#" + name);
+    });
+
+    gfw_list_list.addEventListener("change", (earg: CustomEvent) => {
+        gfw_text_view.activate(earg.detail.index);
+    });
+
+    gfw_list_list.append_sub_item("<a href='#user-defined'   >USER DEFINED</a>", {url: "/luci-static"});
+    gfw_list_list.append_sub_item("<a href='#github-gfw-list'>GITHUB GFW  </a>", {url: "https://baidu.com"});
+
+    document.addEventListener("click", () => {
+        hide_menu();
+        selected_elem  = null;
+        selected_index = -1;
+    });
+    fucking.ElementsAccessor.gfw_list.addEventListener("contextmenu", (ev: MouseEvent) => {
+        let target: Element;
+        if((ev.target as Element).nodeName.toLowerCase() == "a") {
+            target = (ev.target as Element).parentNode as Element;
+        } else if ((ev.target as Element).nodeName.toLowerCase() == "li") {
+            target = ev.target as Element;
+        } else {
+            return;
+        }
+        if(target.parentNode.parentNode.children[0] != target.parentNode) return;
+        for(let i = 0; i<target.parentNode.children.length; i++) {
+            if(target.parentNode.children[i] == target) {
+                selected_index = i;
+                break;
+            }
+        }
+        selected_elem = target as HTMLElement;
+        utils.assert(selected_index != -1);
+        show_menu(ev.clientX - 10, ev.clientY - 10);
+        ev.preventDefault();
+    });
+} //}
+function __init_list_b() //{
+{
+    let the_rename_input: HTMLInputElement = utils.createNodeFromHtmlString(`<input type="text"/>`) as HTMLInputElement;
+    let the_replaced_node: HTMLElement;
+    the_rename_input.addEventListener("keydown", (ev: KeyboardEvent) => {
+        if(ev.code.toLowerCase() != "enter") return;
+        utils.assert(the_replaced_node != null);
+        if(the_rename_input.value != "")
+            the_replaced_node.innerText = the_rename_input.value;
+        the_rename_input.parentNode.replaceChild(the_replaced_node, the_rename_input);
+        the_replaced_node = null;
+        ev.preventDefault();
+        return;
+    });
+    // TODO delete post to server
+    fucking.ElementsAccessor.gfw_delete.addEventListener("click", () => {
+        utils.assert(selected_index != -1);
+        utils.assert(gfw_list_list.delete_by_index(selected_index));
+    });
+    fucking.ElementsAccessor.gfw_rename.addEventListener("click", () => {
+        utils.assert(selected_elem  != null);
+        utils.assert(selected_index != -1);
+        the_replaced_node = selected_elem.firstChild as HTMLElement;
+        the_rename_input.value = the_replaced_node.innerText;
+        the_replaced_node.parentNode.replaceChild(the_rename_input, the_replaced_node);
+        the_rename_input.select();
+        return;
+    });
+    fucking.ElementsAccessor.gfw_post.  addEventListener("click", () => {
+    });
+    fucking.ElementsAccessor.gfw_update.addEventListener("click", () => {
+    });
+} //}
+document.addEventListener("DOMContentLoaded", () => {
+    __init_list_a();
+    __init_list_b();
+});
+
+var conf_cache = new Map<string, HTMLInputElement | HTMLSelectElement>();
+function ssrconfig_get(str) //{
+{
+    if(conf_cache[str] != null) return conf_cache[str].value;
+    let elem = document.getElementById("main-server-" + str.replace(/[_]/g, "-")) as HTMLInputElement | HTMLSelectElement;
+    if(elem == null) return null
+    conf_cache[str] = elem;
+    return elem.value;
+} //}
+// server test
+var in_test = false;
+let url_of_server_test = "/cgi-bin/luci/admin/services/ssrui/test-server";
+function get_test_promise(post_content): Promise<any> //{
+{
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", url_of_server_test, true);
+        xhr.onload = () => {
+            if(xhr.status != 200) {
+                reject(xhr.status);
+            } else {
+                resolve(xhr.response);
+            }
+        }
+        xhr.send(post_content);
+    });
+} //}
+document.addEventListener("DOMContentLoaded", () => {
+    fucking.ElementsAccessor.test_button.addEventListener("click", () => {
+        if(in_test) {
+            message_bar.ShowWithDuration(`<div class="bg-warning m-2 p-2">${CONS.TEST_WAIT}</div>`, 2 * 1000, true);
+            return;
+        }
+        in_test = true;
+        let server = ssrconfig_get("server");
+        let port   = ssrconfig_get("server_port");
+        utils.assert(server != null && port != null);
+        let json = JSON.stringify({server: server, port: port});
+        let pp = get_test_promise(json);
+        pp.then((data) => {
+            message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">${CONS.TEST_SUCCESS}</div>`, 2 * 1000, true);
+            fucking.ElementsAccessor.test_output.value = data;
+            in_test = false;
+        }, () => {
+            message_bar.ShowWithDuration(`<div class="bg-warning m-2 p-2">${CONS.TEST_FAIL}</div>`, 2 * 1000, true);
+            in_test = false;
+        });
+        return;
+    });
 });
 
