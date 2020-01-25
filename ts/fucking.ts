@@ -905,9 +905,17 @@ function __init_list_b() //{
         ev.preventDefault();
         return;
     });
-    // TODO delete post to server
     fucking.ElementsAccessor.gfw_delete.addEventListener("click", () => {
         utils.assert(selected_index != -1);
+        let url: string = (selected_elem as any).extra_info;
+        let name: string = (selected_elem.firstChild as HTMLElement).innerText; // TODO post data
+        let data: string = (gfw_text_view.get_child_with_index(selected_index).children[1] as HTMLTextAreaElement).value;
+        gfw.del_by_hash(url).then(() => {
+            message_bar.ShowWithDuration(`<div class="bg-success">delete '${url}' success<div>`, 3 * 1000);
+        }, () => {
+            message_bar.ShowWithDuration(`<div class="bg-danger"> delete '${url}' success<div>`, 3 * 1000);
+            gfw_list_list.append_sub_item(`<a href="#${name}>name</a>`, url);
+        });
         utils.assert(gfw_list_list.delete_by_index(selected_index));
     });
     fucking.ElementsAccessor.gfw_rename.addEventListener("click", () => {
@@ -920,8 +928,27 @@ function __init_list_b() //{
         return;
     });
     fucking.ElementsAccessor.gfw_post.  addEventListener("click", () => {
+        let url: string = (selected_elem as any).extra_info;
+        let name: string = (selected_elem.firstChild as HTMLElement).innerText;
+        let ee: HTMLElement = gfw_text_view.get_child_with_index(selected_index) as HTMLElement;
+        let data: string = (ee.children[1] as HTMLTextAreaElement).value;
+        gfw.post_by_hash(url, name, data).then( () => {
+            message_bar.ShowWithDuration(`<div class="bg-success">${CONS.POSTSUCCESS}</div>`, 3 * 1000);
+        }, () => {
+            message_bar.ShowWithDuration(`<div class="bg-danger">${CONS.POSTFAIL}</div>`, 3 * 1000);
+        });
+        return;
     });
     fucking.ElementsAccessor.gfw_update.addEventListener("click", () => {
+        let url: string = (selected_elem as any).extra_info;
+        let ee: HTMLElement = gfw_text_view.get_child_with_index(selected_index) as HTMLElement;
+        utils.assert(url != null);
+        gfw.get_cross_domain(url).then((res: string) => {
+            (ee.children[1] as HTMLTextAreaElement).value = res;
+        }, (status: number) => {
+            message_bar.ShowWithDuration(`<div class="bg-danger">${CONS.UPDATEFAIL} |${status}|</div>`, 3 * 1000);
+        });
+        return;
     });
 } //}
 document.addEventListener("DOMContentLoaded", () => {

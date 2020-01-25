@@ -20,6 +20,8 @@ export function fhash(str: string): number //{
 } //}
 (window as any).fhash = fhash;
 
+//}
+
 function map_to_params(map: Record<string, string>): string //{
 {
     let ret: string = "";
@@ -91,3 +93,17 @@ export function post_by_hash(hash: string, name: string, data: string): Promise<
     });
 } //}
 
+export function get_cross_domain(url: string) //{
+{
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.onload = () => {
+            if (xhr.status < 300 && xhr.status >= 200) 
+                resolve(xhr.response)
+            else
+                reject(xhr.status)
+        };
+        xhr.send();
+    });
+} //}

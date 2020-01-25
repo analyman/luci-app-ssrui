@@ -37,6 +37,11 @@ export var TEST_WAIT = "Already send test request, please wait a moment";
 
 export var INPUT_NAME = "Input the name of this url";
 
+export var POSTSUCCESS = "successfully post data of gfw";
+export var POSTFAIL    = "fail to post the data";
+
+export var UPDATEFAIL    = "fail to update the data";
+
 if (window.navigator.language == "en") {
     NewOption     = "添加";
     NewButtonName = "添加";
@@ -74,4 +79,8 @@ if (window.navigator.language == "en") {
     TEST_WAIT    = "已经在测试中, 请稍等!";
 
     INPUT_NAME = "输入这个URL的命名";
+
+    POSTSUCCESS = "成功上传数据";
+    POSTFAIL    = "上传数据失败";
+    UPDATEFAIL  = "更新数据失败";
 }
