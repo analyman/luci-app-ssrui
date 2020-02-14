@@ -73,7 +73,8 @@ export function tab_click(_id) //{
 
 export function assert(val: boolean) //{
 {
-    if(!val) console.error("debug");
+    if(!val) 
+        console.error("debug");
 } //}
 
 

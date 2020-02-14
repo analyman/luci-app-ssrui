@@ -9,6 +9,7 @@ import * as input from './input';
 import * as controller from './controller';
 import * as cssinjector from './css_injector';
 import * as gfw from './gfw_operation';
+import * as upload from './uploadfile';
 
 // export constants to global scope
 window["CONS"] = {};
@@ -45,7 +46,6 @@ function add_new_subscription(url) //{
 
 document.addEventListener("DOMContentLoaded", function() {
     fucking.retry_get_elements();
-    console.log(gfw.fhash("hello"));
 
     fucking.ElementsAccessor.subscriptions_group.addEventListener(UContentChange, function() {
         let list: any[] = fucking.classify_servers_by_subscription(fucking.VarAccessor.server_index);
@@ -861,8 +861,8 @@ function __init_list_a() //{
         gfw_text_view.activate(earg.detail.index);
     });
 
-    gfw_list_list.append_sub_item("<a href='#user-defined'   >USER DEFINED</a>", {url: "/luci-static"});
-    gfw_list_list.append_sub_item("<a href='#github-gfw-list'>GITHUB GFW  </a>", {url: "https://baidu.com"});
+    gfw_list_list.append_sub_item("<a href='#user-defined'   >USER DEFINED</a>", {url: "/luci-static/resource"});
+    gfw_list_list.append_sub_item("<a href='#github-gfw-list'>GITHUB GFW  </a>", {url: "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"});
 
     document.addEventListener("click", () => {
         hide_menu();
@@ -907,14 +907,14 @@ function __init_list_b() //{
     });
     fucking.ElementsAccessor.gfw_delete.addEventListener("click", () => {
         utils.assert(selected_index != -1);
-        let url: string = (selected_elem as any).extra_info;
+        let url: any = (selected_elem as any).extra_info;
         let name: string = (selected_elem.firstChild as HTMLElement).innerText; // TODO post data
         let data: string = (gfw_text_view.get_child_with_index(selected_index).children[1] as HTMLTextAreaElement).value;
-        gfw.del_by_hash(url).then(() => {
-            message_bar.ShowWithDuration(`<div class="bg-success">delete '${url}' success<div>`, 3 * 1000);
+        gfw.del_by_hash(url["url"]).then(() => {
+            message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">delete '${url["url"]}' success<div>`, 3 * 1000);
         }, () => {
-            message_bar.ShowWithDuration(`<div class="bg-danger"> delete '${url}' success<div>`, 3 * 1000);
-            gfw_list_list.append_sub_item(`<a href="#${name}>name</a>`, url);
+            message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2"> delete '${url["url"]}' fail<div>`, 3 * 1000);
+            gfw_list_list.append_sub_item(`<a href="#${name}">${name}</a>`, url);
         });
         utils.assert(gfw_list_list.delete_by_index(selected_index));
     });
@@ -928,25 +928,26 @@ function __init_list_b() //{
         return;
     });
     fucking.ElementsAccessor.gfw_post.  addEventListener("click", () => {
-        let url: string = (selected_elem as any).extra_info;
+        let url: any = (selected_elem as any).extra_info;
         let name: string = (selected_elem.firstChild as HTMLElement).innerText;
         let ee: HTMLElement = gfw_text_view.get_child_with_index(selected_index) as HTMLElement;
-        let data: string = (ee.children[1] as HTMLTextAreaElement).value;
-        gfw.post_by_hash(url, name, data).then( () => {
-            message_bar.ShowWithDuration(`<div class="bg-success">${CONS.POSTSUCCESS}</div>`, 3 * 1000);
+        let data: string = (ee.querySelector("textarea")).value;
+        gfw.post_by_hash_2(url["url"], name, data).then( () => {
+            message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">${CONS.POSTSUCCESS}</div>`, 3 * 1000);
         }, () => {
-            message_bar.ShowWithDuration(`<div class="bg-danger">${CONS.POSTFAIL}</div>`, 3 * 1000);
+            message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.POSTFAIL}</div>`, 3 * 1000);
         });
         return;
     });
     fucking.ElementsAccessor.gfw_update.addEventListener("click", () => {
-        let url: string = (selected_elem as any).extra_info;
+        let url: any = (selected_elem as any).extra_info;
         let ee: HTMLElement = gfw_text_view.get_child_with_index(selected_index) as HTMLElement;
-        utils.assert(url != null);
-        gfw.get_cross_domain(url).then((res: string) => {
-            (ee.children[1] as HTMLTextAreaElement).value = res;
+        utils.assert(url        != null);
+        utils.assert(url["url"] != null);
+        gfw.get_cross_domain(url["url"]).then((res: string) => {
+            ee.querySelector("textarea").value = res;
         }, (status: number) => {
-            message_bar.ShowWithDuration(`<div class="bg-danger">${CONS.UPDATEFAIL} |${status}|</div>`, 3 * 1000);
+            message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.UPDATEFAIL} |${status}|</div>`, 3 * 1000);
         });
         return;
     });
