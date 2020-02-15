@@ -21,6 +21,8 @@ module.tmp_file_dir = tmp_file_dir
 local file_table   = "/tmp/upload_file_table"
 
 local MAX_INTERVAL = 300 -- 300s
+
+local UPLOADFILE_DEBUG = true
 --> End Constant
 
 --< Utils
@@ -46,22 +48,6 @@ local function U_sleep(n) -- => void --<
 end -->
 module.sleep = U_sleep
 
-local __pid = nil
-local function U_get_pid() --< => number
-    -- work in linux
-    if __pid == nil then
-        local pstat_fd = io.open("/proc/self/stat", "r")
-        if pstat_fd == nil then return nil end
-        local pstat = pstat_fd:read("*a")
-        pstat_fd:close()
-        local _a, _b = string.find(pstat, "^%d*")
-        local pid = pstat:sub(_a, _b)
-        __pid = tonumber(pid)
-    end
-    assert(__pid ~= nil)
-    return __pid
-end -->
-
 local function U_concat_path(dir, ...) --<
     local name = ""
     local i = 1
@@ -80,6 +66,39 @@ local function U_concat_path(dir, ...) --<
         res = dir .. "/" .. name
     end
     return res
+end -->
+
+local function U_rmdirr(dir_name) --< boolean | nil
+    assert(type(dir_name) == "string")
+    if nfs.stat(dir_name, "type") ~= "dir" then return false end
+    for file in nfs.dir(dir_name) do
+        local e, c, m
+        if nfs.stat(U_concat_path(dir_name, path), "type") == "dir" then
+            e, c, m = U_rmdirr(U_concat_path(dir_name, path))
+            if e == nil then return e, c, m end
+        end
+        e, c, m = nfs.remove(U_concat_path(dir_name, path))
+        if e == nil then return e, c, m end
+    end
+    e, c, m = nfs.rmdir(dir_name)
+    if e == nil then return e, c, m end
+    return true
+end -->
+
+local __pid = nil
+local function U_get_pid() --< => number
+    -- work in linux
+    if __pid == nil then
+        local pstat_fd = io.open("/proc/self/stat", "r")
+        if pstat_fd == nil then return nil end
+        local pstat = pstat_fd:read("*a")
+        pstat_fd:close()
+        local _a, _b = string.find(pstat, "^%d*")
+        local pid = pstat:sub(_a, _b)
+        __pid = tonumber(pid)
+    end
+    assert(__pid ~= nil)
+    return __pid
 end -->
 
 local function U_binary_search(array, val) -- => number --<
@@ -127,6 +146,7 @@ local function U_hash_exist(hash) -- => boolean --<
     end
     return true
 end -->
+
 --> End Utils
 
 --< Mutex
@@ -145,6 +165,10 @@ local function M_acquire_file_lock(filename) -- => boolean --<
     -- acquire loop
     while (true) do
         if nfs.mkdir(filename .. ".lock") then
+            if UPLOADFILE_DEBUG == true then
+                local trace = debug.traceback()
+                nfs.writefile(U_concat_path(filename .. ".lock", traceback), trace)
+            end
             return true
         end
         log.debug(sid .. "sleep " .. suspend .. " second, at " .. os.time())
@@ -157,7 +181,7 @@ local function M_acquire_file_lock(filename) -- => boolean --<
     end
 end -->
 local function M_release_file_lock(filename) -- => void --<
-    if nfs.rmdir(filename .. ".lock") then
+    if U_rmdirr(filename .. ".lock") then
         log.debug("release file lock <", filename, ">")
     else
         log.error("here is a file mutex bug, in unlock file mutex <" .. filename .. ">")

@@ -44,9 +44,15 @@ export class UploadSession extends event._EventTarget //{
 
     success_queue:      number[];
     finish_flag:        boolean;
+
+    wins_check:         number;
+    wins_limit:         number;
+    time_check:         number;
+
+    no_error_loop:      boolean;
     static speed_test_interval: number = 3000; // ms
 
-    constructor(url, hash, data, slice_size = 10240, window_size = 10, timeout = 0, tolerance = 0) //{
+    constructor(url, hash, data, slice_size = 10240, window_size = 2, timeout = 0, tolerance = 0) //{
     {
         super();
         this.url                = url;
@@ -57,8 +63,8 @@ export class UploadSession extends event._EventTarget //{
         this.origin_window_size = window_size;
         this.recieved           = new Set<number>();
         this.sending            = new Set<number>();
-        this.slice_timeout      = this.slice_size * window_size >= 5000 ? this.slice_size * window_size: 5000; // unset
-        this.slice_number       = Math.ceil(data.length * 1.0 / slice_size);
+        this.slice_timeout      = 5000; // unset
+        this.slice_number       = Math.ceil(data.length / slice_size);
         // this.seq_init          = Math.floor(Math.random() * 5000000);
         this.seq_init           = 6001030;
         this.already_handshake  = false;
@@ -69,6 +75,11 @@ export class UploadSession extends event._EventTarget //{
         this.start_time         = performance.now();
         this.tolerance          = tolerance > 0 ? tolerance : this.slice_number * 3;
         this.finish_flag        = false;
+
+        this.wins_check = 0;
+        this.wins_limit = 1;
+        this.time_check = 0;
+        this.no_error_loop = false;
     } //}
 
     // statistics
@@ -99,13 +110,24 @@ export class UploadSession extends event._EventTarget //{
             return (n / 1024).toFixed(2) + "mb/s";
     } //}
 
-    private modified_window_size(): number //{
+    private modified_window_size(): void //{
     {
-        let try__ = Math.floor(this.window_size * (1 - this.error_num / this.try_send > 0 ? this.try_send : 1) * 1.3);
-        if (try__ < 1) try__ = 1;
-        if (try__ > this.origin_window_size * 2) try__ = this.origin_window_size * 2;
-        this.window_size = try__;
-        return try__;
+        if (this.no_error_loop)
+            this.wins_check++;
+        else
+            this.wins_check -= 5;
+        if (this.wins_check >= this.wins_limit) {
+            this.wins_check = 0;
+            if (this.wins_limit > 3) this.wins_limit--;
+            this.window_size++;
+            consolelog("increase")
+        } else if (this.wins_check < 0) {
+            this.window_size += this.wins_check;
+            this.wins_check = 0;
+            this.wins_limit += 5;
+            if (this.window_size <= 0) this.window_size = 1;
+            consolelog("decrease")
+        }
     } //}
 
     private modified_slice_timeout(): number //{
@@ -192,15 +214,18 @@ export class UploadSession extends event._EventTarget //{
             };
             xhr.onerror = () => {
                 console.debug("erron in " + num);
+                this.no_error_loop = false;
                 resolve(false);
             }
             xhr.onabort = () => {
                 console.debug("abort " + num);
+                this.no_error_loop = false;
                 resolve(false);
             }
             xhr.ontimeout = () => {
                 this.timeout_num++;
                 console.debug("timeout in " + num);
+                this.no_error_loop = false;
                 resolve(false);
             }
             let data = this.data.slice(num * this.slice_size, (num + 1) * this.slice_size);
@@ -229,13 +254,14 @@ export class UploadSession extends event._EventTarget //{
         }
         utils.assert(i <= this.slice_number);
         let init: number = i;
-        let hw = this.modified_window_size();
-        consolelog(hw.toString() + " " + this.sending.size.toString());
-        for(;i < this.slice_number && res.length + this.sending.size < hw; i++) {
+        this.modified_window_size();
+        consolelog("window size: " + this.window_size + ", recieved frame: " + this.recieved.size.toString());
+        for(;i < this.slice_number && res.length + this.sending.size < this.window_size; i++) {
             if (this.sending.has(i)) continue;
             if (this.recieved.has(i)) continue;
             res.push(i);
         }
+        consolelog(res);
         return res;
     } //}
 
@@ -247,6 +273,7 @@ export class UploadSession extends event._EventTarget //{
         let queue__ = [];
         while (this.recieved.size != this.slice_number) {
             let new__ = this.should_send();
+            this.no_error_loop = true;
             consolelog(JSON.stringify(new__));
             new__.map(x => {queue__.push(this.sendPart(x));});
             if (queue__.length != 0)
