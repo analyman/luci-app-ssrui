@@ -40,6 +40,7 @@ export class UploadSession extends event._EventTarget //{
     error_num:          number;
     timeout_num:        number;
     tolerance:          number;
+    __abort:            boolean;
     try_send:           number;
 
     success_queue:      number[];
@@ -74,6 +75,7 @@ export class UploadSession extends event._EventTarget //{
         this.timeout            = timeout;
         this.start_time         = performance.now();
         this.tolerance          = tolerance > 0 ? tolerance : this.slice_number * 3;
+        this.__abort            = false;
         this.finish_flag        = false;
 
         this.wins_check = 0;
@@ -120,13 +122,11 @@ export class UploadSession extends event._EventTarget //{
             this.wins_check = 0;
             if (this.wins_limit > 3) this.wins_limit--;
             this.window_size++;
-            consolelog("increase")
         } else if (this.wins_check < 0) {
             this.window_size += this.wins_check;
             this.wins_check = 0;
             this.wins_limit += 5;
             if (this.window_size <= 0) this.window_size = 1;
-            consolelog("decrease")
         }
     } //}
 
@@ -203,9 +203,9 @@ export class UploadSession extends event._EventTarget //{
                         this.finish_flag = true;
                         resolve(true);
                     }
-                    if (rcv["holes"] != null || rcv["holes"].length != 0) {
-                        let holes = (rcv["holes"] as string[]).map(x => parseInt(x)).sort();
-                        for(let i = this.seq_init; i < holes[0]; i++) {
+                    if (rcv["sup"] != null) {
+                        let sup = parseInt(rcv["sup"]) - this.seq_init;
+                        for(let i = 0; i < sup; i++) {
                             this.recieved.add(i);
                         }
                     }
@@ -234,15 +234,18 @@ export class UploadSession extends event._EventTarget //{
         });
         let rr = await pr;
         this.sending.delete(num);
-        consolelog("delete " + num);
         if (rr == true) {
             this.recieved.add(num);
             this.dispatchEvent(new CustomEvent("RecieveAck", {detail: {ack: num}}));
-            consolelog("recieve ack " + num);
         } else {
             this.error_num++;
         }
         return rr == true;
+    } //}
+
+    abort() //{
+    {
+        this.__abort = true;
     } //}
 
     private should_send(): number[] //{
@@ -261,7 +264,6 @@ export class UploadSession extends event._EventTarget //{
             if (this.recieved.has(i)) continue;
             res.push(i);
         }
-        consolelog(res);
         return res;
     } //}
 
@@ -269,20 +271,23 @@ export class UploadSession extends event._EventTarget //{
     {
         let hs = await this.handshake();
         this.finish_flag = false;
+        this.__abort = false;
         if (hs == false) return false;
         let queue__ = [];
         while (this.recieved.size != this.slice_number) {
             let new__ = this.should_send();
             this.no_error_loop = true;
-            consolelog(JSON.stringify(new__));
             new__.map(x => {queue__.push(this.sendPart(x));});
             if (queue__.length != 0)
                 await queue__.shift();
             else {
-                consolelog("sleep ...");
                 await sleep(2500);
             }
             if (this.finish_flag) return true; // stop loop
+            if (this.__abort) {
+                this.dispatchEvent(new CustomEvent("abort"));
+                return false;
+            }
             if (this.timeout > 0 && performance.now() - this.start_time > this.timeout) {
                 this.dispatchEvent(new CustomEvent("timeout"));
                 return false;

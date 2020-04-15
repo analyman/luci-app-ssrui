@@ -1,0 +1,12 @@
+{
+    "493C213B03D744DA8E2C77E3E3E07186":
+    {
+        "name":"GITHUB GFW",
+        "url":"https:\/\/raw.githubusercontent.com\/gfwlist\/gfwlist\/master\/gfwlist.txt"
+    },
+    "61E9F4E0B92DEC5EA3587F37349AF09C":
+    {
+        "name":"USER DEFINED",
+        "url":"\/cgi-bin\/luci\/admin\/services\/ssrui\/user-defined-gfw"
+    }
+}

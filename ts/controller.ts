@@ -135,6 +135,12 @@ export class LIST extends ControllerBase //{
             (this.list_elem.firstChild as HTMLElement).classList.add(list_active_);
     }
 
+    get_sub_elem(ee: number): HTMLElement {
+        if(ee as number >= this.list_elem.children.length)
+            return null;
+        return this.list_elem.children[ee as number] as HTMLElement;
+    }
+
     private delete_sub_elem(ee: HTMLElement | number): boolean {
         let ret: boolean = false;
         let test_e: HTMLElement;

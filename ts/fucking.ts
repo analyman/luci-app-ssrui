@@ -861,8 +861,39 @@ function __init_list_a() //{
         gfw_text_view.activate(earg.detail.index);
     });
 
-    gfw_list_list.append_sub_item("<a href='#user-defined'   >USER DEFINED</a>", {url: "/luci-static/resource"});
+    gfw_list_list.append_sub_item("<a href='#user-defined'   >USER DEFINED</a>", {url: "/cgi-bin/luci/admin/services/ssrui/user-defined-gfw"});
     gfw_list_list.append_sub_item("<a href='#github-gfw-list'>GITHUB GFW  </a>", {url: "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"});
+
+    // fetch gfw list from server
+    gfw.get_all()
+    .then(response => {
+        let parsed = JSON.parse(response);
+        let e1 = gfw_list_list.get_sub_elem(0);
+        let u1 = (e1 as any).extra_info["url"];
+        let t1 = gfw_text_view.get_child_with_index(0).querySelector("textarea");
+        let e2 = gfw_list_list.get_sub_elem(1);
+        let u2 = (e2 as any).extra_info["url"];
+        let t2 = gfw_text_view.get_child_with_index(1).querySelector("textarea");
+        let k = 2;
+        for (let i in parsed) {
+            if ((parsed[i] as any).url == u1) {
+                t1.value = parsed[i]["data"];
+                continue;
+            }
+            if ((parsed[i] as any).url == u2) {
+                t2.value = parsed[i]["data"];
+                continue;
+            }
+            let elem = gfw_list_list.append_sub_item(
+                `<a href='#${(parsed[i]["name"] as string).replace(" ", "-")}'>${parsed[i]["name"]}</a>`, 
+                {url: parsed[i]["url"]});
+            gfw_text_view.get_child_with_index(k).querySelector("textarea").value = parsed[i]["data"];
+            k++;
+        }
+        message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2"> get gfw list success<div>`, 3 * 1000);
+    }, err => {
+        message_bar.ShowWithDuration(`<div class="bg-danger  m-2 p-2"> get gfw list fail<div>`, 3 * 1000);
+    });
 
     document.addEventListener("click", () => {
         hide_menu();
@@ -946,6 +977,7 @@ function __init_list_b() //{
         utils.assert(url["url"] != null);
         gfw.get_cross_domain(url["url"]).then((res: string) => {
             ee.querySelector("textarea").value = res;
+            message_bar.ShowWithDuration(`<div class="bg-success m-2 p-2">${CONS.UPDATESUCCESS}</div>`, 3 * 1000);
         }, (status: number) => {
             message_bar.ShowWithDuration(`<div class="bg-danger m-2 p-2">${CONS.UPDATEFAIL} |${status}|</div>`, 3 * 1000);
         });

@@ -90,7 +90,7 @@ export function get_by_hash(hash: string): Promise<any> //{
 {
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
-        xhr.open("GET", request_url + map_to_params({opcode: "2", hash: hash}));
+        xhr.open("GET", request_url + map_to_params({opcode: "2", hash: quick_hash(hash)}));
         xhr.onload = () => {
             if(xhr.status >= 200 && xhr.status < 300)
                 resolve(xhr.response); // plain text
@@ -105,7 +105,7 @@ export function del_by_hash(hash: string): Promise<any> //{
 {
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
-        xhr.open("POST", request_url + map_to_params({opcode: "3", hash: hash}));
+        xhr.open("POST", request_url + map_to_params({opcode: "3", hash: quick_hash(hash)}));
         xhr.onload = () => {
             if(xhr.status >= 200 && xhr.status < 300)
                 resolve(xhr.response);
@@ -118,6 +118,7 @@ export function del_by_hash(hash: string): Promise<any> //{
 
 export function post_by_hash(url: string, name: string, data: string): Promise<any> //{
 {
+    if (data == "") data = " ";
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         xhr.open("POST", request_url + map_to_params(
@@ -146,6 +147,7 @@ let copy_upload = "/cgi-bin/luci/admin/services/ssrui/copyfile";
 let dele_upload = "/cgi-bin/luci/admin/services/ssrui/delfile";
 export async function post_by_hash_2(url: string, name: string, data: string): Promise<boolean> //{
 {
+    if (data == "") data = " ";
     let session = new upload.UploadSession(upload_url, quick_hash(url), data);
     let rr: boolean = await session.send();
     if (rr == false) throw false;
@@ -166,8 +168,9 @@ export async function post_by_hash_2(url: string, name: string, data: string): P
         }
         xhr.send(JSON.stringify(params));
     });
-    pr.then(() => rr = true);
-    /*
+    await pr.then(() => rr = true);
+    if (rr == false) throw false;
+    rr = false;
     pr = new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         let params = {
@@ -182,8 +185,7 @@ export async function post_by_hash_2(url: string, name: string, data: string): P
         }
         xhr.send(JSON.stringify(params));
     });
-    pr.then(() => true, () => true);
-    */
+    await pr.then(() => rr = true);
     if (rr == false) throw false;
     return true;
 } //}

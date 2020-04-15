@@ -8,6 +8,8 @@ local upload = require('uploadfile')
 local ssrui = require('ssrui')
 local nfs   = require('nixio.fs')
 
+local log   = require('log')
+
 module("luci.controller.ssrui", package.seeall)
 function index()
 		if not nixio.fs.access("/etc/config/ssrui") then
@@ -23,6 +25,8 @@ function index()
     entry({"admin", "services", "ssrui", "uploadfile"},   call("uploadfile_handle")).leaf=true
     entry({"admin", "services", "ssrui", "copyfile"},     call("copyfile_handle")).leaf=true
     entry({"admin", "services", "ssrui", "delfile"},      call("delfile_handle")).leaf=true
+
+    entry({"admin", "services", "ssrui", "user-defined-gfw"},   call("user_defined_gfw")).leaf=true
 end
 
 function gfw_handle() --<
@@ -35,6 +39,10 @@ function act_status() --<
   luci.http.prepare_content("application/json")
   luci.http.write_json(e)
 end -->
+
+function user_defined_gfw()
+    return ssrui.user_defined_gfw()
+end
 
 local __valid_json_files = {}
 __valid_json_files["protocol_list"] = "/etc/ssrui/protocol_list.json"
@@ -170,43 +178,9 @@ function uploadfile_handle() --<
 end -->
 
 function copyfile_handle() --<
-    local req_method = luci.http.getenv("REQUEST_METHOD")
-    if req_method:lower() ~= "post" then
-        luci.http.status(400, "Bad Request")
-        luci.http.prepare_content("text/html")
-        luci.http.write("<h1> FUCK FAULT ERROR </h1>")
-        return 1
-    end
-    local content, len = luci.http.content()
-    local tb = jsonc.parse(content)
-    if len == 0 or tb == nil or tb["hash"] == nil or tb["name"] == nil or tb["url"] == nil then 
-        luci.http.status(406, "Not Acceptable")
-        return 1
-    end
-    local src_file = upload.tmp_file_dir .. tb["hash"] .. "file"
-    local dst_file = ssrui.gfw_dir .. tb["hash"]
-    if nfs.copy(src_file, dst_file) == nil then
-        luci.http.status(404, "Not Found")
-        return 1
-    end
-    luci.http.status(200, "OK")
-    return 0
+    return ssrui.copyfile_handle()
 end -->
 
 function delfile_handle() --<
-    local req_method = luci.http.getenv("REQUEST_METHOD")
-    if req_method:lower() ~= "post" then
-        luci.http.status(400, "Bad Request")
-        return 1
-    end
-    local content, len = luci.http.content()
-    local tb = jsonc.parse(content)
-    if len == 0 or tb == nil or tb["hash"] == nil then 
-        luci.http.status(406, "Not Acceptable")
-        return 1
-    end
-    local dir = upload.tmp_file_dir .. tb["hash"]
-    os.execute("rm -rf " .. dir)
-    luci.http.status(200, "OK")
-    return 0
+    return ssrui.delfile_handle()
 end -->

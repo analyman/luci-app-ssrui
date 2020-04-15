@@ -67,6 +67,7 @@ local function U_concat_path(dir, ...) --<
     end
     return res
 end -->
+module.concat_path = U_concat_path
 
 local function U_rmdirr(dir_name) --< boolean | nil
     assert(type(dir_name) == "string")
@@ -116,18 +117,15 @@ local function U_binary_search(array, val) -- => number --<
 end -->
 
 local function U_in_array(array, val) -- => boolean --<
-    log.debug("test " .. tostring(val) .. " in " .. json.stringify(array))
     assert(type(val) == "number")
     local i, e = 1, #array
     while i <= e do
         assert(type(array[i]) == "number")
         if array[i] == val then 
-            log.debug("---- in")
             return true, i 
         end
         i = i + 1
     end
-    log.debug("---- not in")
     return false
 end -->
 
@@ -141,7 +139,6 @@ end -->
 
 local function U_hash_exist(hash) -- => boolean --<
     if nfs.stat(U_concat_path(tmp_file_dir, hash), "type") ~= "dir" then
-        log.warn(U_concat_path(tmp_file_dir, hash), " doesn't exsit")
         return false
     end
     return true
@@ -171,7 +168,6 @@ local function M_acquire_file_lock(filename) -- => boolean --<
             end
             return true
         end
-        log.debug(sid .. "sleep " .. suspend .. " second, at " .. os.time())
         U_sleep(suspend)
         if (suspend >= max_suspend_time / 2) then
             log.debug(sid .. "fail to get lock")
@@ -180,6 +176,7 @@ local function M_acquire_file_lock(filename) -- => boolean --<
         suspend = suspend * 2
     end
 end -->
+module.acquire_file_lock = M_acquire_file_lock
 local function M_release_file_lock(filename) -- => void --<
     if U_rmdirr(filename .. ".lock") then
         log.debug("release file lock <", filename, ">")
@@ -187,6 +184,7 @@ local function M_release_file_lock(filename) -- => void --<
         log.error("here is a file mutex bug, in unlock file mutex <" .. filename .. ">")
     end
 end -->
+module.release_file_lock = M_release_file_lock
 local function M_acquire_table_lock() return M_acquire_file_lock(file_table) end
 local function M_release_table_lock() return M_release_file_lock(file_table) end
 --> End Mutex
@@ -207,7 +205,7 @@ local function T_get_sessions_list() -- => table --<
     local ss = fd:read("*a")
     fd:close()
     local res = {}
-    for hash, max_sequence_num, slice_length, state in string.gfind(ss, "(%w+)%s*,%s*(%d+)%s*,%s*(%d+)%s*,%s*(%w+)%s*$") do
+    for hash, max_sequence_num, slice_length, state in string.gfind(ss, "(%w+)%s*,%s*(%d+)%s*,%s*(%d+)%s*,%s*(%w+)") do
         res[hash] = {hash, max_sequence_num, slice_length, state}
     end
     return res
@@ -253,7 +251,6 @@ end -->
 
 --< Core
 local function C_merge_temp_files(hash) -- => void --<
-    log.debug("merge file whose hash is " .. hash)
     local main_fd = io.open(U_concat_path(tmp_file_dir, hash, "file"),"w")
     while true do
         if M_acquire_file_lock(U_concat_path(tmp_file_dir, hash, "table")) then break end
@@ -277,7 +274,6 @@ local function C_merge_temp_files(hash) -- => void --<
 end -->
 
 local function C_handle_add_slice(file_status, seq_num, data) -- => boolean --<
-    log.debug("Add slice, [hash: ", file_status[1], "sequence number: ", seq_num, "data length: ", data:len(), "]")
     local hash = file_status[1]
     local table_f = U_concat_path(tmp_file_dir, hash, "table")
     if M_acquire_file_lock(table_f) == false then return nil end
@@ -294,7 +290,6 @@ local function C_handle_add_slice(file_status, seq_num, data) -- => boolean --<
     M_release_file_lock(table_f)
     array[#array + 1] = tonumber(seq_num)
     table.sort(array)
-    log.debug("array is " .. json.stringify(array))
     local fd = io.open(U_concat_path(tmp_file_dir, hash, seq_num), "w")
     assert(fd)
     fd:write(data)
@@ -319,7 +314,9 @@ local function C_handle_add_slice(file_status, seq_num, data) -- => boolean --<
         prev = array[i]
         i = i + 1
     end
-    return holes, #holes == 0 and #array == tonumber(file_status[3])
+    local mm = array[#array]
+    if #holes ~= 0 then mm = holes[1] end
+    return holes, mm, #holes == 0 and #array == tonumber(file_status[3])
 end -->
 
 local function C_handle_http_request() -- => boolean --<
@@ -327,17 +324,17 @@ local function C_handle_http_request() -- => boolean --<
     local hash      = lhttp.formvalue("Hash")
     if handshake ~= nil then
     --< handshake
-        log.debug("handshake with " .. hash)
         local max_sequence = lhttp.formvalue("Max-Sequence")
         local slice_length = lhttp.formvalue("Slice-Length")
         if max_sequence == nil or slice_length == nil then
-            lhttp.write("@Max-Sequence and @Slice-Length is required in handshake")
             lhttp.status(400, "Bad Request")
+            lhttp.write("@Max-Sequence <" .. tostring(max_sequence == nil) .. "> and @Slice-Length <" .. 
+                                             tostring(slice_length == nil) .. "> is required in handshake")
             return false
         end
         if M_acquire_table_lock() == false then 
             lhttp.status(500, "Internal Server Error")
-            lhttp.write("retry")
+            lhttp.write("fail to get file lock")
             return false
         end
         local tab = T_get_sessions_list()
@@ -357,6 +354,7 @@ local function C_handle_http_request() -- => boolean --<
         os.execute("rm -rf " .. dir__ .. "; mkdir -p " .. dir__)
         if nfs.stat(U_concat_path(tmp_file_dir, hash), "type") ~= "dir" then
             lhttp.status(500, "Internal Server Error")
+            lhttp.write("Server error with creating directory")
             return false
         end
         os.execute("touch " .. U_concat_path(dir__, "table"))
@@ -365,30 +363,36 @@ local function C_handle_http_request() -- => boolean --<
     end
     if M_acquire_table_lock() == false then 
         lhttp.status(500, "Internal Server Error")
-        lhttp.write("retry")
+        lhttp.write("<h1>fail to acquire file lock</h1>")
         return false
     end
     local tab = T_get_sessions_list()
     M_release_table_lock()
     if tab == nil then 
         lhttp.status(500, "Internal Server Error")
-        lhttp.write("retry")
+        lhttp.write("<h1>fail to get connected session</h1>")
         return false
     end
     local file_status = tab[hash]
     local seq = tonumber(lhttp.formvalue("Sequence-Number"))
     if file_status == nil or seq == nil or (not U_hash_exist(hash)) then
         lhttp.status(400, "Bad Request")
-        log.warn(json.stringify({tab=tab, seq=seq, hash=hash}, true))
+        lhttp.write("<h1>Reason</h1>"..
+                    "<ol>" ..
+                    "<li>client don't handshake with server " .. tostring(file_status == nil) .. "</li>" .. 
+                    "<li>parameters of request url don't contain @Sequence-Number ".. tostring(seq == nil) .. "</li>" ..
+                    "<li>Server Error " .. tostring(not U_hash_exist(hash)) .. "</li>" .. 
+                    "</ol>")
         return false
     end
     if file_status[5] == "FINISH" then -- duplicated content
         lhttp.status(208, "Existed")
+        lhttp.write("duplicated content")
         return true
     end
     local _, data
     data, _ = lhttp.content()
-    local holes, finish = C_handle_add_slice(file_status, seq, data)
+    local holes, mm, finish = C_handle_add_slice(file_status, seq, data)
     if finish then
         while true do
             if M_acquire_table_lock() then break end
@@ -402,7 +406,7 @@ local function C_handle_http_request() -- => boolean --<
     end
     lhttp.status(200, "OK")
     lhttp.prepare_content("application/json")
-    lhttp.write(json.stringify({holes=holes, ack=seq, finish=finish}))
+    lhttp.write(json.stringify({sup=mm, holes=holes, ack=seq, finish=finish}))
     return true
 end -->
 module.handle_http_request = C_handle_http_request

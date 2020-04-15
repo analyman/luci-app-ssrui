@@ -1,4 +1,5 @@
 /* Constants, such message */
+const fff = require("http");
 
 export var NewOption     = "NEW";
 export var NewButtonName = "NEW";
@@ -41,6 +42,7 @@ export var POSTSUCCESS = "successfully post data of gfw";
 export var POSTFAIL    = "fail to post the data";
 
 export var UPDATEFAIL    = "fail to update the data";
+export var UPDATESUCCESS = "update successfully";
 
 if (window.navigator.language == "en") {
     NewOption     = "添加";
@@ -83,4 +85,5 @@ if (window.navigator.language == "en") {
     POSTSUCCESS = "成功上传数据";
     POSTFAIL    = "上传数据失败";
     UPDATEFAIL  = "更新数据失败";
+    UPDATESUCCESS = "成功更新数据";
 }
